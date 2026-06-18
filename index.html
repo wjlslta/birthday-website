@@ -186,7 +186,7 @@
             const distance = targetDate - now;
 
             if (distance < 0) {
-                document.getElementById('countdown').innerHTML = '🎉 It\'s Janice's birthday! 🎉';
+                document.getElementById('countdown').innerHTML = '🎉 It\'s Janice\'s birthday! 🎉';
                 return;
             }
 
@@ -486,6 +486,7 @@
             switchTab('photo');
         }
 
+        //Adding entry to gallery
         function createEntry(file, type) {
             const reader = new FileReader();
             let base64Data = '';
@@ -633,6 +634,7 @@
             }
         }
 
+        //Deleting entry with password verification
         function requestDeleteEntry(index) {
             pendingDeleteIndex = index;
             document.getElementById('deletePassword').value = '';
