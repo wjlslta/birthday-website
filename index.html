@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday! 🎉</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        .countdown {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInLeft 0.8s ease;
+        }
+
+        .upload-section h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-section h2 i {
+            font-size: 1.8rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Drag & Drop */
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+            transform: scale(1.02);
+        }
+
+        .drop-zone i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .drop-zone p {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .drop-zone small {
+            color: #999;
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* Video Recording */
+        .video-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 15px;
+            background: #000;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0ff;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ee5a52;
+        }
+
+        .btn-success {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #40c057;
+        }
+
+        .recording-indicator {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Preview */
+        .preview {
+            margin: 20px 0;
+        }
+
+        .preview img,
+        .preview video {
+            max-width: 100%;
+            border-radius: 10px;
+            max-height: 250px;
+        }
+
+        /* Message Form */
+        .message-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-form input,
+        .message-form textarea {
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .message-form input:focus,
+        .message-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .message-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            animation: fadeInRight 0.8s ease;
+        }
+
+        .gallery-section h2 {
+            color: white;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 2rem;
+        }
+
+        .gallery-section h2 i {
+            font-size: 2rem;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-item-media {
+            width: 100%;
+            height: 200px;
+            background: #f0f0ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .gallery-item-media img,
+        .gallery-item-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item-content {
+            padding: 15px;
+        }
+
+        .gallery-item-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .gallery-item-message {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            max-height: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gallery-item-time {
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .gallery-item-type {
+            display: inline-block;
+            background: #f0f0ff;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        .empty-gallery {
+            text-align: center;
+            color: white;
+            padding: 60px 20px;
+        }
+
+        .empty-gallery i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-gallery p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #667eea;
+        }
+
+        .modal-media {
+            margin-bottom: 20px;
+        }
+
+        .modal-media img,
+        .modal-media video {
+            max-width: 100%;
+            border-radius: 15px;
+        }
+
+        .modal-info {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .modal-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .modal-content {
+                max-width: 95%;
+                padding: 20px;
+            }
+        }
+
+        .success-message {
+            background: #51cf66;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🎉 Happy Birthday! 🎂</h1>
+            <p>Share your memories with me</p>
+            <div class="countdown" id="countdown">Loading...</div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h2><i class="fas fa-heart"></i> Add Your Memory</h2>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('photo')">📸 Photo</button>
+                    <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
+                    <button class="tab-btn" onclick="switchTab('message')">💬 Message</button>
+                </div>
+
+                <!-- Photo Tab -->
+                <div id="photo" class="tab-content active">
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p><strong>Click to upload or drag & drop</strong></p>
+                        <small>PNG, JPG up to 5MB</small>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                    <div id="photoPreview" class="preview"></div>
+                </div>
+
+                <!-- Video Tab -->
+                <div id="video" class="tab-content">
+                    <p style="margin-bottom: 15px; color: #666;">Click start to record your birthday message (max 30 seconds)</p>
+                    <div class="video-container">
+                        <video id="videoPreview"></video>
+                    </div>
+                    <div class="video-controls">
+                        <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
+                            <i class="fas fa-circle"></i> Start Recording
+                        </button>
+                        <button class="btn btn-danger" id="stopRecordBtn" onclick="stopRecording()" style="display: none;">
+                            <i class="fas fa-stop-circle"></i> Stop Recording
+                        </button>
+                    </div>
+                    <div id="recordingStatus"></div>
+                    <div id="videoPreviewContainer" class="preview"></div>
+                </div>
+
+                <!-- Message Tab -->
+                <div id="message" class="tab-content">
+                    <form class="message-form" onsubmit="submitAll(event)">
+                        <input type="text" id="userName" placeholder="Your name" required>
+                        <textarea id="userMessage" placeholder="Write your birthday message..." required></textarea>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle"></i> Successfully added to the gallery!
+                </div>
+            </div>
+
+            <!-- Gallery Section -->
+            <div class="gallery-section">
+                <h2><i class="fas fa-images"></i> Gallery</h2>
+                <div class="gallery" id="gallery">
+                    <div class="empty-gallery">
+                        <i class="fas fa-inbox"></i>
+                        <p>No memories yet.<br>Be the first to share! 💝</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-media" id="modalMedia"></div>
+            <div class="modal-info">
+                <h3 id="modalName"></h3>
+                <p id="modalMessage"></p>
+                <small id="modalTime" style="color: #999;"></small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage (using localStorage for demo, will be replaced with backend)
+        let mediaFile = null;
+        let videoRecorder = null;
+        let recordedChunks = [];
+        let isRecording = false;
+        let recordingTime = 0;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            loadGallery();
+            setupDropZone();
+        });
+
+        // Countdown timer
+        function updateCountdown() {
+            const targetDate = new Date('2026-06-28').getTime();
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.getElementById('countdown').innerHTML = '🎉 It\'s your birthday! 🎉';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${minutes}m until the celebration!`;
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Drop zone
+        function setupDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                handlePhotoUpload(e.dataTransfer.files[0]);
+            });
+        }
+
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            handlePhotoUpload(e.target.files[0]);
+        });
+
+        function handlePhotoUpload(file) {
+            if (!file) return;
+            mediaFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('photoPreview').innerHTML = `
+                    <img src="${e.target.result}" alt="preview">
+                    <button class="btn btn-primary" style="margin-top: 15px;" onclick="submitPhoto()">
+                        <i class="fas fa-upload"></i> Upload Photo
+                    </button>
+                `;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Video recording
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const videoPreview = document.getElementById('videoPreview');
+                videoPreview.srcObject = stream;
+                videoPreview.play();
+
+                const mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+                isRecording = true;
+                recordingTime = 0;
+
+                mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    mediaFile = blob;
+                    stream.getTracks().forEach(track => track.stop());
+
+                    const videoUrl = URL.createObjectURL(blob);
+                    document.getElementById('videoPreviewContainer').innerHTML = `
+                        <video controls style="margin-top: 15px;"></video>
+                        <button class="btn btn-primary" style="margin-top: 15px;" onclick="submitVideo()">
+                            <i class="fas fa-upload"></i> Upload Video
+                        </button>
+                    `;
+                    document.querySelector('#videoPreviewContainer video').src = videoUrl;
+                    isRecording = false;
+                };
+
+                // Max 30 seconds
+                setTimeout(() => {
+                    if (isRecording) {
+                        stopRecording(mediaRecorder);
+                    }
+                }, 30000);
+
+                videoRecorder = mediaRecorder;
+                mediaRecorder.start();
+
+                document.getElementById('startRecordBtn').style.display = 'none';
+                document.getElementById('stopRecordBtn').style.display = 'flex';
+                document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording...</div>';
+
+                updateRecordingTimer();
+            } catch (error) {
+                alert('Could not access camera. Please check permissions.');
+            }
+        }
+
+        function stopRecording(recorder = videoRecorder) {
+            if (recorder) {
+                recorder.stop();
+                document.getElementById('startRecordBtn').style.display = 'flex';
+                document.getElementById('stopRecordBtn').style.display = 'none';
+                document.getElementById('recordingStatus').innerHTML = '';
+                isRecording = false;
+            }
+        }
+
+        function updateRecordingTimer() {
+            if (isRecording) {
+                recordingTime++;
+                document.getElementById('recordingStatus').innerHTML = `<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording... ${recordingTime}s</div>`;
+                setTimeout(updateRecordingTimer, 1000);
+            }
+        }
+
+        // Submit functions
+        function submitPhoto() {
+            if (!mediaFile) return;
+            const entry = createEntry(mediaFile, 'photo');
+            addToGallery(entry);
+            resetPhotoTab();
+        }
+
+        function submitVideo() {
+            if (!mediaFile) return;
+            const entry = createEntry(mediaFile, 'video');
+            addToGallery(entry);
+            resetVideoTab();
+        }
+
+        function submitAll(event) {
+            event.preventDefault();
+            const name = document.getElementById('userName').value;
+            const message = document.getElementById('userMessage').value;
+
+            const entry = {
+                type: 'message',
+                name: name,
+                message: message,
+                timestamp: new Date().toLocaleString(),
+                data: message
+            };
+
+            addToGallery(entry);
+            document.getElementById('userName').value = '';
+            document.getElementById('userMessage').value = '';
+            switchTab('photo');
+        }
+
+        function createEntry(file, type) {
+            const reader = new FileReader();
+            let base64Data = '';
+
+            reader.onload = (e) => {
+                base64Data = e.target.result;
+            };
+
+            reader.readAsDataURL(file);
+
+            return {
+                type: type,
+                name: prompt('What\'s your name?') || 'Anonymous',
+                message: prompt('Write a short message (optional)') || '',
+                timestamp: new Date().toLocaleString(),
+                data: file
+            };
+        }
+
+        function addToGallery(entry) {
+            let entries = JSON.parse(localStorage.getItem('birthdayEntries') || '[]');
+            
+            // Store as base64 for images/videos
+            if (entry.data instanceof Blob) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    entry.data = e.target.result;
+                    entries.push(entry);
+                    localStorage.setItem('birthdayEntries', JSON.stringify(entries));
+                    loadGallery();
+                    showSuccess();
+                };
+                reader.readAsDataURL(entry.data);
+            } else {
+                entries.push(entry);
+                localStorage.setItem('birthdayEntries', JSON.stringify(entries));
+                loadGallery();
+                showSuccess();
+            }
+        }
+
+        function loadGallery() {
+            const entries = JSON.parse(localStorage.getItem('birthdayEntries') || '[]');
+            const gallery = document.getElementById('gallery');
+
+            if (entries.length === 0) {
+                gallery.innerHTML = `
+                    <div class="empty-gallery">
+                        <i class="fas fa-inbox"></i>
+                        <p>No memories yet.<br>Be the first to share! 💝</p>
+                    </div>
+                `;
+                return;
+            }
+
+            gallery.innerHTML = entries.map((entry, index) => `
+                <div class="gallery-item" onclick="openModal(${index})">
+                    <div class="gallery-item-media">
+                        ${entry.type === 'message' ? 
+                            `<div style="width: 100%; padding: 20px; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <div>
+                                    <i class="fas fa-comment" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                                    <p>${entry.name}</p>
+                                </div>
+                            </div>` :
+                            `<${entry.type} src="${entry.data}" controls></` + entry.type + `>`
+                        }
+                    </div>
+                    <div class="gallery-item-content">
+                        <div class="gallery-item-name">${entry.name}</div>
+                        <div class="gallery-item-message">${entry.message || 'No message'}</div>
+                        <div class="gallery-item-type">${entry.type}</div>
+                        <div class="gallery-item-time">${entry.timestamp}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal(index) {
+            const entries = JSON.parse(localStorage.getItem('birthdayEntries') || '[]');
+            const entry = entries[index];
+
+            if (entry.type === 'message') {
+                document.getElementById('modalMedia').innerHTML = `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 20px; border-radius: 15px; text-align: center;">
+                        <i class="fas fa-comment" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                        <p style="font-size: 1.2rem;">${entry.name}</p>
+                    </div>
+                `;
+            } else {
+                document.getElementById('modalMedia').innerHTML = `<${entry.type} src="${entry.data}" controls style="width: 100%; border-radius: 15px;"></${entry.type}>`;
+            }
+
+            document.getElementById('modalName').textContent = entry.name;
+            document.getElementById('modalMessage').textContent = entry.message || 'No message provided';
+            document.getElementById('modalTime').textContent = entry.timestamp;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event && event.target.id !== 'modal') return;
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function resetPhotoTab() {
+            document.getElementById('photoInput').value = '';
+            document.getElementById('photoPreview').innerHTML = '';
+            mediaFile = null;
+        }
+
+        function resetVideoTab() {
+            document.getElementById('videoPreviewContainer').innerHTML = '';
+            mediaFile = null;
+            recordedChunks = [];
+        }
+
+        function showSuccess() {
+            const msg = document.getElementById('successMessage');
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 3000);
+        }
+
+        // Allow closing modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
