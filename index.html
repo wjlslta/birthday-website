@@ -22,7 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* Striped background pattern like the card */
         body::before {
             content: '';
             position: fixed;
@@ -42,13 +41,12 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
         }
 
-        /* Header */
         header {
             text-align: center;
             color: #f5e6d3;
@@ -81,7 +79,6 @@
             border: 2px solid rgba(245, 230, 211, 0.3);
         }
 
-        /* Ornate divider */
         .divider {
             text-align: center;
             margin: 40px 0;
@@ -89,7 +86,6 @@
             font-size: 2rem;
         }
 
-        /* Main Content */
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -97,8 +93,7 @@
             margin-bottom: 60px;
         }
 
-        /* Upload Section */
-        .upload-section {
+        .upload-section, .photobooth-section {
             background: #f5e6d3;
             border-radius: 15px;
             padding: 40px;
@@ -108,9 +103,14 @@
             position: relative;
         }
 
-        /* Ornate corner decoration */
+        .photobooth-section {
+            animation: fadeInDown 0.8s ease;
+        }
+
         .upload-section::before,
-        .upload-section::after {
+        .upload-section::after,
+        .photobooth-section::before,
+        .photobooth-section::after {
             content: '';
             position: absolute;
             width: 20px;
@@ -118,21 +118,23 @@
             border: 2px solid #D4A574;
         }
 
-        .upload-section::before {
+        .upload-section::before,
+        .photobooth-section::before {
             top: 10px;
             left: 10px;
             border-right: none;
             border-bottom: none;
         }
 
-        .upload-section::after {
+        .upload-section::after,
+        .photobooth-section::after {
             bottom: 10px;
             right: 10px;
             border-left: none;
             border-top: none;
         }
 
-        .upload-section h2 {
+        .section-title {
             color: #8B6B63;
             margin-bottom: 30px;
             display: flex;
@@ -142,15 +144,12 @@
             font-weight: 600;
         }
 
-        .upload-section h2 i {
-            font-size: 2rem;
-        }
-
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 30px;
             border-bottom: 2px solid #D4A574;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -180,7 +179,6 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* Drag & Drop */
         .drop-zone {
             border: 3px dashed #D4A574;
             border-radius: 15px;
@@ -216,18 +214,10 @@
             margin-top: 10px;
         }
 
-        /* Video Recording */
-        .video-container {
-            background: rgba(212, 165, 116, 0.1);
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        video {
+        video, canvas {
             width: 100%;
             border-radius: 15px;
-            background: #333;
+            background: #000;
         }
 
         .video-controls {
@@ -298,36 +288,94 @@
             gap: 5px;
         }
 
-        .recording-indicator {
-            display: inline-block;
-            background: #A67B7B;
-            color: #f5e6d3;
-            padding: 8px 16px;
-            border-radius: 20px;
+        .btn-info {
+            background: #D4A574;
+            color: #8B6B63;
+        }
+
+        .btn-info:hover {
+            background: #C89560;
+        }
+
+        /* Photobooth Styles */
+        .photobooth-container {
+            background: rgba(212, 165, 116, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .camera-frame {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            aspect-ratio: 4/3;
+        }
+
+        .frame-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .frame-option {
+            padding: 8px 15px;
+            border: 2px solid #D4A574;
+            background: rgba(212, 165, 116, 0.2);
+            color: #8B6B63;
+            border-radius: 8px;
+            cursor: pointer;
             font-size: 0.9rem;
             font-weight: 600;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .frame-option.active {
+            background: #8B6B63;
+            color: #f5e6d3;
+            border-color: #8B6B63;
+        }
+
+        .frame-option:hover {
+            transform: translateY(-2px);
+        }
+
+        .countdown-timer {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            color: #f5e6d3;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+
+        .countdown-timer.active {
+            display: block;
             animation: pulse 1s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+        /* Frame Styles */
+        #photoboothCanvas {
+            display: block;
+            margin: 0 auto;
         }
 
-        /* Preview */
-        .preview {
-            margin: 20px 0;
+        .frame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
-        .preview img,
-        .preview video {
-            max-width: 100%;
-            border-radius: 10px;
-            max-height: 250px;
-        }
-
-        /* Message Form */
         .message-form {
             display: flex;
             flex-direction: column;
@@ -358,7 +406,6 @@
             min-height: 100px;
         }
 
-        /* Gallery Section */
         .gallery-section {
             animation: fadeInRight 0.8s ease;
         }
@@ -371,10 +418,6 @@
             gap: 10px;
             font-size: 2rem;
             font-weight: 600;
-        }
-
-        .gallery-section h2 i {
-            font-size: 2rem;
         }
 
         .gallery {
@@ -482,7 +525,6 @@
             opacity: 0.8;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -554,9 +596,9 @@
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #D4A574;
+            flex-wrap: wrap;
         }
 
-        /* Thank You Modal */
         .thank-you-modal {
             display: none;
             position: fixed;
@@ -673,7 +715,6 @@
             }
         }
 
-        /* Animations */
         @keyframes fadeInDown {
             from {
                 opacity: 0;
@@ -712,36 +753,27 @@
             to { opacity: 1; }
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 2.5rem;
-            }
-
-            header p {
-                font-size: 1.3rem;
-            }
-
             .main-content {
                 grid-template-columns: 1fr;
                 gap: 30px;
+            }
+
+            header h1 {
+                font-size: 2.5rem;
             }
 
             .gallery {
                 grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             }
 
-            .modal-content {
-                max-width: 95%;
-                padding: 20px;
+            .frame-selector {
+                gap: 8px;
             }
 
-            .thank-you-card {
-                padding: 40px 30px;
-            }
-
-            .thank-you-card h2 {
-                font-size: 2rem;
+            .frame-option {
+                padding: 6px 12px;
+                font-size: 0.8rem;
             }
         }
 
@@ -769,11 +801,40 @@
                 transform: translateY(0);
             }
         }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .photobooth-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .photobooth-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .photobooth-preview img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .photobooth-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header>
             <h1>Happy 19th Birthday to Janice 🤎</h1>
             <p>Share your memories with me</p>
@@ -782,60 +843,94 @@
 
         <div class="divider">✦ ✦ ✦</div>
 
-        <!-- Main Content -->
         <div class="main-content">
-            <!-- Upload Section -->
-            <div class="upload-section">
-                <h2><i class="fas fa-heart"></i> Add Your Memory</h2>
+            <!-- Upload & Photobooth Section -->
+            <div>
+                <!-- Upload Section -->
+                <div class="upload-section">
+                    <h2 class="section-title"><i class="fas fa-heart"></i> Add Your Memory</h2>
 
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('photo')">📸 Photo</button>
-                    <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
-                    <button class="tab-btn" onclick="switchTab('message')">💬 Message</button>
-                </div>
-
-                <!-- Photo Tab -->
-                <div id="photo" class="tab-content active">
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p><strong>Click to upload or drag & drop</strong></p>
-                        <small>PNG, JPG up to 5MB</small>
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('photo')">📸 Photo</button>
+                        <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
+                        <button class="tab-btn" onclick="switchTab('message')">💬 Message</button>
                     </div>
-                    <input type="file" id="photoInput" accept="image/*" style="display: none;">
-                    <div id="photoPreview" class="preview"></div>
-                </div>
 
-                <!-- Video Tab -->
-                <div id="video" class="tab-content">
-                    <p style="margin-bottom: 15px; color: #666;">Click start to record your birthday message (max 30 seconds)</p>
-                    <div class="video-container">
-                        <video id="videoPreview"></video>
+                    <div id="photo" class="tab-content active">
+                        <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p><strong>Click to upload or drag & drop</strong></p>
+                            <small>PNG, JPG up to 5MB</small>
+                        </div>
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                        <div id="photoPreview" class="preview"></div>
                     </div>
-                    <div class="video-controls">
-                        <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
-                            <i class="fas fa-circle"></i> Start Recording
-                        </button>
-                        <button class="btn btn-danger" id="stopRecordBtn" onclick="stopRecording()" style="display: none;">
-                            <i class="fas fa-stop-circle"></i> Stop Recording
-                        </button>
+
+                    <div id="video" class="tab-content">
+                        <p style="margin-bottom: 15px; color: #666;">Click start to record your birthday message (max 30 seconds)</p>
+                        <div class="video-controls">
+                            <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
+                                <i class="fas fa-circle"></i> Start Recording
+                            </button>
+                            <button class="btn btn-danger" id="stopRecordBtn" onclick="stopRecording()" style="display: none;">
+                                <i class="fas fa-stop-circle"></i> Stop Recording
+                            </button>
+                        </div>
+                        <div id="recordingStatus"></div>
+                        <div id="videoPreviewContainer" class="preview"></div>
                     </div>
-                    <div id="recordingStatus"></div>
-                    <div id="videoPreviewContainer" class="preview"></div>
+
+                    <div id="message" class="tab-content">
+                        <form class="message-form" onsubmit="submitAll(event)">
+                            <input type="text" id="userName" placeholder="Your name" required>
+                            <textarea id="userMessage" placeholder="Write your birthday message..." required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="success-message" id="successMessage">
+                        <i class="fas fa-check-circle"></i> Successfully added to the gallery!
+                    </div>
                 </div>
 
-                <!-- Message Tab -->
-                <div id="message" class="tab-content">
-                    <form class="message-form" onsubmit="submitAll(event)">
-                        <input type="text" id="userName" placeholder="Your name" required>
-                        <textarea id="userMessage" placeholder="Write your birthday message..." required></textarea>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Send Message
-                        </button>
-                    </form>
-                </div>
+                <!-- Photobooth Section -->
+                <div class="photobooth-section" style="margin-top: 40px;">
+                    <h2 class="section-title"><i class="fas fa-camera"></i> 📷 Digital Photobooth</h2>
+                    
+                    <div class="photobooth-container">
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: #8B6B63; font-weight: 600;">Choose Frame:</label>
+                            <div class="frame-selector">
+                                <button class="frame-option active" onclick="selectFrame('classic')">Classic</button>
+                                <button class="frame-option" onclick="selectFrame('rainbow')">Rainbow</button>
+                                <button class="frame-option" onclick="selectFrame('glitter')">Glitter</button>
+                                <button class="frame-option" onclick="selectFrame('hearts')">Hearts 🤎</button>
+                                <button class="frame-option" onclick="selectFrame('confetti')">Confetti</button>
+                            </div>
+                        </div>
 
-                <div class="success-message" id="successMessage">
-                    <i class="fas fa-check-circle"></i> Successfully added to the gallery!
+                        <div class="camera-frame" id="cameraFrame">
+                            <video id="photoboothVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                            <div class="countdown-timer" id="countdownTimer"></div>
+                            <canvas id="photoboothCanvas" style="display: none;"></canvas>
+                        </div>
+
+                        <div class="photobooth-buttons">
+                            <button class="btn btn-success" id="startPhotobooth" onclick="startPhotobooth()">
+                                <i class="fas fa-power-off"></i> Start Camera
+                            </button>
+                            <button class="btn btn-danger" id="stopPhotobooth" onclick="stopPhotobooth()" style="display: none;">
+                                <i class="fas fa-stop"></i> Stop Camera
+                            </button>
+                            <button class="btn btn-primary" id="capturePhoto" onclick="capturePhoto()" style="display: none;">
+                                <i class="fas fa-camera"></i> Capture (3s)
+                            </button>
+                        </div>
+
+                        <div class="photobooth-preview" id="photoboothPreview"></div>
+                    </div>
                 </div>
             </div>
 
@@ -881,14 +976,14 @@
     </div>
 
     <script>
-        // Data storage (using localStorage for demo, will be replaced with backend)
         let mediaFile = null;
         let videoRecorder = null;
         let recordedChunks = [];
         let isRecording = false;
         let recordingTime = 0;
+        let currentFrame = 'classic';
+        let photoboothStream = null;
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateCountdown();
             setInterval(updateCountdown, 1000);
@@ -896,7 +991,6 @@
             setupDropZone();
         });
 
-        // Countdown timer with seconds
         function updateCountdown() {
             const targetDate = new Date('2026-06-28T00:00:00').getTime();
             const now = new Date().getTime();
@@ -915,7 +1009,6 @@
             document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s until the celebration!`;
         }
 
-        // Tab switching
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -923,7 +1016,6 @@
             event.target.classList.add('active');
         }
 
-        // Drop zone
         function setupDropZone() {
             const dropZone = document.getElementById('dropZone');
             dropZone.addEventListener('dragover', (e) => {
@@ -959,13 +1051,184 @@
             reader.readAsDataURL(file);
         }
 
-        // Video recording
+        // Photobooth Functions
+        function selectFrame(frame) {
+            currentFrame = frame;
+            document.querySelectorAll('.frame-option').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function startPhotobooth() {
+            try {
+                photoboothStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                document.getElementById('photoboothVideo').srcObject = photoboothStream;
+                document.getElementById('startPhotobooth').style.display = 'none';
+                document.getElementById('stopPhotobooth').style.display = 'flex';
+                document.getElementById('capturePhoto').style.display = 'flex';
+            } catch (error) {
+                alert('Could not access camera. Please check permissions.');
+            }
+        }
+
+        function stopPhotobooth() {
+            if (photoboothStream) {
+                photoboothStream.getTracks().forEach(track => track.stop());
+                document.getElementById('startPhotobooth').style.display = 'flex';
+                document.getElementById('stopPhotobooth').style.display = 'none';
+                document.getElementById('capturePhoto').style.display = 'none';
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('photoboothVideo');
+            const canvas = document.getElementById('photoboothCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame
+            ctx.drawImage(video, 0, 0);
+
+            // Draw frame overlay
+            drawFrame(ctx, canvas.width, canvas.height);
+
+            // Show countdown
+            let countdown = 3;
+            const countdownEl = document.getElementById('countdownTimer');
+            countdownEl.classList.add('active');
+            countdownEl.textContent = countdown;
+
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownEl.textContent = countdown;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownEl.classList.remove('active');
+
+                    // Get image and show preview
+                    const imageData = canvas.toDataURL('image/png');
+                    showPhotoboothPreview(imageData);
+                }
+            }, 1000);
+        }
+
+        function drawFrame(ctx, width, height) {
+            ctx.lineWidth = 8;
+
+            switch(currentFrame) {
+                case 'classic':
+                    ctx.strokeStyle = '#D4A574';
+                    ctx.strokeRect(10, 10, width - 20, height - 20);
+                    break;
+                case 'rainbow':
+                    const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
+                    for (let i = 0; i < 7; i++) {
+                        ctx.strokeStyle = colors[i];
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(10 + i*2, 10 + i*2, width - 20 - i*4, height - 20 - i*4);
+                    }
+                    break;
+                case 'glitter':
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 10;
+                    ctx.strokeRect(10, 10, width - 20, height - 20);
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                    for (let i = 0; i < 50; i++) {
+                        const x = Math.random() * width;
+                        const y = Math.random() * height;
+                        ctx.fillRect(x, y, 5, 5);
+                    }
+                    break;
+                case 'hearts':
+                    ctx.strokeStyle = '#8B6B63';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(10, 10, width - 20, height - 20);
+                    ctx.font = 'bold 40px Arial';
+                    ctx.fillStyle = '#8B6B63';
+                    ctx.fillText('🤎', 20, 50);
+                    ctx.fillText('🤎', width - 70, 50);
+                    ctx.fillText('🤎', 20, height - 20);
+                    ctx.fillText('🤎', width - 70, height - 20);
+                    break;
+                case 'confetti':
+                    ctx.strokeStyle = '#8B6B63';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(10, 10, width - 20, height - 20);
+                    ctx.font = '30px Arial';
+                    const confetti = ['🎉', '🎊', '✨', '🎈', '🎁'];
+                    for (let i = 0; i < 20; i++) {
+                        ctx.fillText(confetti[Math.floor(Math.random() * confetti.length)], 
+                                    Math.random() * width, 
+                                    Math.random() * height);
+                    }
+                    break;
+            }
+        }
+
+        function showPhotoboothPreview(imageData) {
+            const preview = document.getElementById('photoboothPreview');
+            preview.innerHTML = `
+                <img src="${imageData}" alt="photobooth">
+                <div class="photobooth-actions">
+                    <button class="btn btn-secondary" onclick="downloadPhotoboothPhoto('${imageData}')">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button class="btn btn-primary" onclick="addPhotoboothToGallery('${imageData}')">
+                        <i class="fas fa-share"></i> Post to Gallery
+                    </button>
+                    <button class="btn btn-info" onclick="capturePhoto()">
+                        <i class="fas fa-redo"></i> Take Another
+                    </button>
+                </div>
+            `;
+        }
+
+        function downloadPhotoboothPhoto(imageData) {
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = `photobooth_${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function addPhotoboothToGallery(imageData) {
+            const name = prompt('What\'s your name?') || 'Anonymous';
+            const message = prompt('Add a message (optional)') || '';
+
+            const entry = {
+                type: 'photobooth',
+                name: name,
+                message: message,
+                timestamp: new Date().toLocaleString(),
+                data: imageData
+            };
+
+            let entries = JSON.parse(localStorage.getItem('birthdayEntries') || '[]');
+            entries.push(entry);
+            localStorage.setItem('birthdayEntries', JSON.stringify(entries));
+            loadGallery();
+            showSuccess();
+
+            setTimeout(() => {
+                showThankYou();
+            }, 800);
+
+            document.getElementById('photoboothPreview').innerHTML = '';
+        }
+
+        // Video Recording
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                const videoPreview = document.getElementById('videoPreview');
-                videoPreview.srcObject = stream;
-                videoPreview.play();
+                const videoEl = document.createElement('video');
+                videoEl.id = 'recordingVideo';
+                videoEl.style.display = 'none';
+                videoEl.srcObject = stream;
+                videoEl.play();
+                document.body.appendChild(videoEl);
 
                 const mediaRecorder = new MediaRecorder(stream);
                 recordedChunks = [];
@@ -977,10 +1240,11 @@
                     const blob = new Blob(recordedChunks, { type: 'video/webm' });
                     mediaFile = blob;
                     stream.getTracks().forEach(track => track.stop());
+                    videoEl.remove();
 
                     const videoUrl = URL.createObjectURL(blob);
                     document.getElementById('videoPreviewContainer').innerHTML = `
-                        <video controls style="margin-top: 15px;"></video>
+                        <video controls style="margin-top: 15px; width: 100%; border-radius: 10px;"></video>
                         <button class="btn btn-primary" style="margin-top: 15px;" onclick="submitVideo()">
                             <i class="fas fa-upload"></i> Upload Video
                         </button>
@@ -989,7 +1253,6 @@
                     isRecording = false;
                 };
 
-                // Max 30 seconds
                 setTimeout(() => {
                     if (isRecording) {
                         stopRecording(mediaRecorder);
@@ -1027,7 +1290,6 @@
             }
         }
 
-        // Submit functions
         function submitPhoto() {
             if (!mediaFile) return;
             const entry = createEntry(mediaFile, 'photo');
@@ -1058,12 +1320,11 @@
             addToGallery(entry);
             document.getElementById('userName').value = '';
             document.getElementById('userMessage').value = '';
-            
-            // Show thank you modal
+
             setTimeout(() => {
                 showThankYou();
             }, 800);
-            
+
             switchTab('photo');
         }
 
@@ -1088,8 +1349,7 @@
 
         function addToGallery(entry) {
             let entries = JSON.parse(localStorage.getItem('birthdayEntries') || '[]');
-            
-            // Store as base64 for images/videos
+
             if (entry.data instanceof Blob) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -1122,35 +1382,41 @@
                 return;
             }
 
-            gallery.innerHTML = entries.map((entry, index) => `
-                <div class="gallery-item admin" onclick="openModal(${index})">
-                    <div class="gallery-item-media">
-                        ${entry.type === 'message' ? 
-                            `<div style="width: 100%; padding: 20px; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); color: #f5e6d3;">
-                                <div>
-                                    <i class="fas fa-comment" style="font-size: 3rem; margin-bottom: 10px;"></i>
-                                    <p>${entry.name}</p>
-                                </div>
-                            </div>` :
-                            `<${entry.type} src="${entry.data}" controls></` + entry.type + `>`
-                        }
-                    </div>
-                    <div class="gallery-item-content">
-                        <div class="gallery-item-name">${entry.name}</div>
-                        <div class="gallery-item-message">${entry.message || 'No message'}</div>
-                        <div class="gallery-item-type">${entry.type}</div>
-                        <div class="gallery-item-time">${entry.timestamp}</div>
-                        <div class="gallery-item-actions" onclick="event.stopPropagation()">
-                            <button class="btn btn-secondary btn-sm" onclick="downloadEntry(${index})">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteEntry(${index})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+            gallery.innerHTML = entries.map((entry, index) => {
+                let mediaHtml = '';
+                if (entry.type === 'message') {
+                    mediaHtml = `<div style="width: 100%; padding: 20px; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); color: #f5e6d3;">
+                        <div>
+                            <i class="fas fa-comment" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                            <p>${entry.name}</p>
+                        </div>
+                    </div>`;
+                } else if (entry.type === 'photobooth') {
+                    mediaHtml = `<img src="${entry.data}" style="width: 100%; height: 100%; object-fit: cover;" alt="photobooth">`;
+                } else {
+                    mediaHtml = `<${entry.type} src="${entry.data}" controls style="width: 100%; height: 100%; object-fit: cover;"></${entry.type}>`;
+                }
+
+                return `
+                    <div class="gallery-item admin" onclick="openModal(${index})">
+                        <div class="gallery-item-media">${mediaHtml}</div>
+                        <div class="gallery-item-content">
+                            <div class="gallery-item-name">${entry.name}</div>
+                            <div class="gallery-item-message">${entry.message || 'No message'}</div>
+                            <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : entry.type}</div>
+                            <div class="gallery-item-time">${entry.timestamp}</div>
+                            <div class="gallery-item-actions" onclick="event.stopPropagation()">
+                                <button class="btn btn-secondary btn-sm" onclick="downloadEntry(${index})">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteEntry(${index})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function openModal(index) {
@@ -1164,6 +1430,8 @@
                         <p style="font-size: 1.2rem;">${entry.name}</p>
                     </div>
                 `;
+            } else if (entry.type === 'photobooth') {
+                document.getElementById('modalMedia').innerHTML = `<img src="${entry.data}" style="width: 100%; border-radius: 15px;" alt="photobooth">`;
             } else {
                 document.getElementById('modalMedia').innerHTML = `<${entry.type} src="${entry.data}" controls style="width: 100%; border-radius: 15px;"></${entry.type}>`;
             }
@@ -1171,8 +1439,7 @@
             document.getElementById('modalName').textContent = entry.name;
             document.getElementById('modalMessage').textContent = entry.message || 'No message provided';
             document.getElementById('modalTime').textContent = entry.timestamp;
-            
-            // Add download and delete buttons
+
             document.getElementById('modalActions').innerHTML = `
                 <button class="btn btn-secondary" onclick="downloadEntry(${index})">
                     <i class="fas fa-download"></i> Download
@@ -1181,7 +1448,7 @@
                     <i class="fas fa-trash"></i> Delete
                 </button>
             `;
-            
+
             document.getElementById('modal').classList.add('active');
         }
 
@@ -1190,7 +1457,6 @@
             const entry = entries[index];
 
             if (entry.type === 'message') {
-                // Download as text file
                 const element = document.createElement('a');
                 const file = new Blob([`From: ${entry.name}\n\n${entry.message}`], {type: 'text/plain'});
                 element.href = URL.createObjectURL(file);
@@ -1199,10 +1465,9 @@
                 element.click();
                 document.body.removeChild(element);
             } else {
-                // Download image or video
                 const element = document.createElement('a');
                 element.href = entry.data;
-                const ext = entry.type === 'photo' ? 'jpg' : 'webm';
+                const ext = entry.type === 'photo' ? 'jpg' : entry.type === 'photobooth' ? 'png' : 'webm';
                 element.download = `${entry.type}_${entry.name}_${Date.now()}.${ext}`;
                 document.body.appendChild(element);
                 element.click();
@@ -1233,6 +1498,8 @@
         }
 
         function resetVideoTab() {
+            const videoEl = document.getElementById('recordingVideo');
+            if (videoEl) videoEl.remove();
             document.getElementById('videoPreviewContainer').innerHTML = '';
             mediaFile = null;
             recordedChunks = [];
@@ -1253,7 +1520,6 @@
             document.getElementById('thankYouModal').classList.remove('active');
         }
 
-        // Allow closing modal with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
