@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy 19th Birthday Janice! 💕</title>
+    <title>Happy 19th Birthday Janice! 🤎</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -62,12 +62,6 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             font-weight: 700;
             letter-spacing: 2px;
-        }
-
-        .header-hearts {
-            font-size: 3rem;
-            margin: 10px 0;
-            letter-spacing: 15px;
         }
 
         header p {
@@ -584,20 +578,68 @@
         .thank-you-content {
             text-align: center;
             animation: scaleIn 0.5s ease;
+            max-width: 600px;
         }
 
-        .thank-you-image {
-            max-width: 90%;
-            max-height: 80vh;
-            width: 600px;
+        .thank-you-card {
+            background: #f5e6d3;
             border-radius: 20px;
+            padding: 60px 40px;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
             margin-bottom: 30px;
+            border: 3px solid #D4A574;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .thank-you-card::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #D4A574;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .thank-you-card::after {
+            content: '';
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #D4A574;
+            border-left: none;
+            border-top: none;
+        }
+
+        .thank-you-card h2 {
+            font-size: 3rem;
+            color: #8B6B63;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .thank-you-hearts {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            letter-spacing: 10px;
+        }
+
+        .thank-you-message {
+            color: #8B6B63;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-style: italic;
         }
 
         .thank-you-text {
             color: #f5e6d3;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 300;
             margin-bottom: 20px;
         }
@@ -676,10 +718,6 @@
                 font-size: 2.5rem;
             }
 
-            .header-hearts {
-                font-size: 2rem;
-            }
-
             header p {
                 font-size: 1.3rem;
             }
@@ -698,9 +736,12 @@
                 padding: 20px;
             }
 
-            .thank-you-image {
-                width: 90%;
-                max-width: 100%;
+            .thank-you-card {
+                padding: 40px 30px;
+            }
+
+            .thank-you-card h2 {
+                font-size: 2rem;
             }
         }
 
@@ -734,8 +775,7 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <div class="header-hearts">💕 💕 💕</div>
-            <h1>Happy 19th Birthday to Janice</h1>
+            <h1>Happy 19th Birthday to Janice 🤎</h1>
             <p>Share your memories with me</p>
             <div class="countdown" id="countdown">Loading...</div>
         </header>
@@ -829,8 +869,13 @@
     <!-- Thank You Modal -->
     <div class="thank-you-modal" id="thankYouModal" onclick="closeThankYou(event)">
         <div class="thank-you-content" onclick="event.stopPropagation()">
-            <img src="https://images.unsplash.com/photo-1505778276668-c6d7eef1dd5f?w=600&h=800&fit=crop" alt="Thank You" class="thank-you-image" id="thankYouImage">
-            <p class="thank-you-text">Thank you so much for being part of my birthday celebration! 💝</p>
+            <div class="thank-you-card">
+                <h2>Thank You! 🤎</h2>
+                <div class="thank-you-hearts">🤎 🤎 🤎</div>
+                <p class="thank-you-message">Thank you so much for being part of my birthday celebration!</p>
+                <p class="thank-you-message">Your love and support mean the world to me.</p>
+            </div>
+            <p class="thank-you-text">✨ Cheers to wonderful memories! ✨</p>
             <button class="thank-you-close" onclick="closeThankYou()">Back to Gallery</button>
         </div>
     </div>
