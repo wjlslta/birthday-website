@@ -601,8 +601,8 @@
         .thank-you-content {
             text-align: center;
             animation: scaleIn 0.5s ease;
-            max-width: 700px;
-            width: 100%;
+            width: fit-content;
+            height: fit-content;
         }
 
         .thank-you-card {
@@ -611,13 +611,15 @@
             padding: 0;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
             margin-bottom: 30px;
-            overflow: hidden;
+            width: fit-content;
+            height: fit-content;
+            overflow: clip;
             position: relative;
         }
 
         .thank-you-card img {
-            width: 100%;
-            height: auto;
+            width: auto;
+            height: 70vh;
             display: block;
         }
 
