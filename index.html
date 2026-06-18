@@ -93,7 +93,7 @@
             margin-bottom: 60px;
         }
 
-        .upload-section, .photobooth-section {
+        .upload-section {
             background: #f5e6d3;
             border-radius: 15px;
             padding: 40px;
@@ -103,14 +103,8 @@
             position: relative;
         }
 
-        .photobooth-section {
-            animation: fadeInDown 0.8s ease;
-        }
-
         .upload-section::before,
-        .upload-section::after,
-        .photobooth-section::before,
-        .photobooth-section::after {
+        .upload-section::after {
             content: '';
             position: absolute;
             width: 20px;
@@ -118,16 +112,14 @@
             border: 2px solid #D4A574;
         }
 
-        .upload-section::before,
-        .photobooth-section::before {
+        .upload-section::before {
             top: 10px;
             left: 10px;
             border-right: none;
             border-bottom: none;
         }
 
-        .upload-section::after,
-        .photobooth-section::after {
+        .upload-section::after {
             bottom: 10px;
             right: 10px;
             border-left: none;
@@ -303,6 +295,9 @@
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 20px;
+            margin-top: 30px;
+            border-top: 2px solid #D4A574;
+            padding-top: 30px;
         }
 
         .camera-frame {
@@ -361,7 +356,6 @@
             animation: pulse 1s infinite;
         }
 
-        /* Frame Styles */
         #photoboothCanvas {
             display: block;
             margin: 0 auto;
@@ -611,6 +605,8 @@
             align-items: center;
             justify-content: center;
             animation: fadeIn 0.5s ease;
+            overflow-y: auto;
+            padding: 20px;
         }
 
         .thank-you-modal.active {
@@ -620,70 +616,24 @@
         .thank-you-content {
             text-align: center;
             animation: scaleIn 0.5s ease;
-            max-width: 600px;
+            max-width: 700px;
+            width: 100%;
         }
 
         .thank-you-card {
-            background: #f5e6d3;
+            background: white;
             border-radius: 20px;
-            padding: 60px 40px;
+            padding: 0;
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
             margin-bottom: 30px;
-            border: 3px solid #D4A574;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        .thank-you-card::before {
-            content: '';
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #D4A574;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .thank-you-card::after {
-            content: '';
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #D4A574;
-            border-left: none;
-            border-top: none;
-        }
-
-        .thank-you-card h2 {
-            font-size: 3rem;
-            color: #8B6B63;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .thank-you-hearts {
-            font-size: 2.5rem;
-            margin: 20px 0;
-            letter-spacing: 10px;
-        }
-
-        .thank-you-message {
-            color: #8B6B63;
-            font-size: 1.3rem;
-            line-height: 1.8;
-            margin-bottom: 20px;
-            font-style: italic;
-        }
-
-        .thank-you-text {
-            color: #f5e6d3;
-            font-size: 1.2rem;
-            font-weight: 300;
-            margin-bottom: 20px;
+        .thank-you-card img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         .thank-you-close {
@@ -831,6 +781,13 @@
             flex-wrap: wrap;
             justify-content: center;
         }
+
+        .photobooth-divider {
+            text-align: center;
+            margin: 30px 0 20px 0;
+            color: #D4A574;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -854,6 +811,7 @@
                         <button class="tab-btn active" onclick="switchTab('photo')">📸 Photo</button>
                         <button class="tab-btn" onclick="switchTab('video')">🎥 Video</button>
                         <button class="tab-btn" onclick="switchTab('message')">💬 Message</button>
+                        <button class="tab-btn" onclick="switchTab('photobooth')">📷 Photobooth</button>
                     </div>
 
                     <div id="photo" class="tab-content active">
@@ -890,46 +848,40 @@
                         </form>
                     </div>
 
+                    <div id="photobooth" class="tab-content">
+                        <div class="photobooth-container">
+                            <div style="margin-bottom: 15px;">
+                                <label style="color: #8B6B63; font-weight: 600;">Choose Frame:</label>
+                                <div class="frame-selector">
+                                    <button class="frame-option active" onclick="selectFrame('classic')">Classic</button>
+                                    <button class="frame-option" onclick="selectFrame('hearts')">Hearts 🤎</button>
+                                </div>
+                            </div>
+
+                            <div class="camera-frame" id="cameraFrame">
+                                <video id="photoboothVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                                <div class="countdown-timer" id="countdownTimer"></div>
+                                <canvas id="photoboothCanvas" style="display: none;"></canvas>
+                            </div>
+
+                            <div class="photobooth-buttons">
+                                <button class="btn btn-success" id="startPhotobooth" onclick="startPhotobooth()">
+                                    <i class="fas fa-power-off"></i> Start Camera
+                                </button>
+                                <button class="btn btn-danger" id="stopPhotobooth" onclick="stopPhotobooth()" style="display: none;">
+                                    <i class="fas fa-stop"></i> Stop Camera
+                                </button>
+                                <button class="btn btn-primary" id="capturePhoto" onclick="capturePhoto()" style="display: none;">
+                                    <i class="fas fa-camera"></i> Capture (3s)
+                                </button>
+                            </div>
+
+                            <div class="photobooth-preview" id="photoboothPreview"></div>
+                        </div>
+                    </div>
+
                     <div class="success-message" id="successMessage">
                         <i class="fas fa-check-circle"></i> Successfully added to the gallery!
-                    </div>
-                </div>
-
-                <!-- Photobooth Section -->
-                <div class="photobooth-section" style="margin-top: 40px;">
-                    <h2 class="section-title"><i class="fas fa-camera"></i> 📷 Digital Photobooth</h2>
-                    
-                    <div class="photobooth-container">
-                        <div style="margin-bottom: 15px;">
-                            <label style="color: #8B6B63; font-weight: 600;">Choose Frame:</label>
-                            <div class="frame-selector">
-                                <button class="frame-option active" onclick="selectFrame('classic')">Classic</button>
-                                <button class="frame-option" onclick="selectFrame('rainbow')">Rainbow</button>
-                                <button class="frame-option" onclick="selectFrame('glitter')">Glitter</button>
-                                <button class="frame-option" onclick="selectFrame('hearts')">Hearts 🤎</button>
-                                <button class="frame-option" onclick="selectFrame('confetti')">Confetti</button>
-                            </div>
-                        </div>
-
-                        <div class="camera-frame" id="cameraFrame">
-                            <video id="photoboothVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
-                            <div class="countdown-timer" id="countdownTimer"></div>
-                            <canvas id="photoboothCanvas" style="display: none;"></canvas>
-                        </div>
-
-                        <div class="photobooth-buttons">
-                            <button class="btn btn-success" id="startPhotobooth" onclick="startPhotobooth()">
-                                <i class="fas fa-power-off"></i> Start Camera
-                            </button>
-                            <button class="btn btn-danger" id="stopPhotobooth" onclick="stopPhotobooth()" style="display: none;">
-                                <i class="fas fa-stop"></i> Stop Camera
-                            </button>
-                            <button class="btn btn-primary" id="capturePhoto" onclick="capturePhoto()" style="display: none;">
-                                <i class="fas fa-camera"></i> Capture (3s)
-                            </button>
-                        </div>
-
-                        <div class="photobooth-preview" id="photoboothPreview"></div>
                     </div>
                 </div>
             </div>
@@ -965,12 +917,8 @@
     <div class="thank-you-modal" id="thankYouModal" onclick="closeThankYou(event)">
         <div class="thank-you-content" onclick="event.stopPropagation()">
             <div class="thank-you-card">
-                <h2>Thank You! 🤎</h2>
-                <div class="thank-you-hearts">🤎 🤎 🤎</div>
-                <p class="thank-you-message">Thank you so much for being part of my birthday celebration!</p>
-                <p class="thank-you-message">Your love and support mean the world to me.</p>
+                <img src="https://raw.githubusercontent.com/wjlslta/birthday-website/main/thank-you.png" alt="Thank You Card">
             </div>
-            <p class="thank-you-text">✨ Cheers to wonderful memories! ✨</p>
             <button class="thank-you-close" onclick="closeThankYou()">Back to Gallery</button>
         </div>
     </div>
@@ -1122,25 +1070,6 @@
                     ctx.strokeStyle = '#D4A574';
                     ctx.strokeRect(10, 10, width - 20, height - 20);
                     break;
-                case 'rainbow':
-                    const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3'];
-                    for (let i = 0; i < 7; i++) {
-                        ctx.strokeStyle = colors[i];
-                        ctx.lineWidth = 4;
-                        ctx.strokeRect(10 + i*2, 10 + i*2, width - 20 - i*4, height - 20 - i*4);
-                    }
-                    break;
-                case 'glitter':
-                    ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 10;
-                    ctx.strokeRect(10, 10, width - 20, height - 20);
-                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-                    for (let i = 0; i < 50; i++) {
-                        const x = Math.random() * width;
-                        const y = Math.random() * height;
-                        ctx.fillRect(x, y, 5, 5);
-                    }
-                    break;
                 case 'hearts':
                     ctx.strokeStyle = '#8B6B63';
                     ctx.lineWidth = 8;
@@ -1151,18 +1080,6 @@
                     ctx.fillText('🤎', width - 70, 50);
                     ctx.fillText('🤎', 20, height - 20);
                     ctx.fillText('🤎', width - 70, height - 20);
-                    break;
-                case 'confetti':
-                    ctx.strokeStyle = '#8B6B63';
-                    ctx.lineWidth = 8;
-                    ctx.strokeRect(10, 10, width - 20, height - 20);
-                    ctx.font = '30px Arial';
-                    const confetti = ['🎉', '🎊', '✨', '🎈', '🎁'];
-                    for (let i = 0; i < 20; i++) {
-                        ctx.fillText(confetti[Math.floor(Math.random() * confetti.length)], 
-                                    Math.random() * width, 
-                                    Math.random() * height);
-                    }
                     break;
             }
         }
