@@ -4,13 +4,13 @@
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const GITHUB_TOKEN='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';
+const WORKER_URL    = 'https://birthdaydata.janicellchancl.workers.dev';
 const REPO_OWNER     = 'wjlslta';
 const REPO_NAME      = 'birthday_data';
 const UPLOAD_PATH    = 'birthday-wishes';
 const RECORDS_FILE   = 'birthday-wishes/records.json';
 const RAW_BASE       = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
-const API_BASE       = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+const API_BASE       = `${WORKER_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
 const TARGET_DATE    = '2026-06-28T00:00:00';
 
 // ── Video recording config ──────────────────────────
@@ -76,9 +76,7 @@ function switchTab(tabName) {
 // ═══════════════════════════════════════════════════
 
 async function githubGet(path) {
-    const resp = await fetch(`${API_BASE}/${path}`, {
-        headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }
-    });
+    const resp = await fetch(`${API_BASE}/${path}`);
     if (!resp.ok) throw new Error(`GET ${path}: ${resp.status}`);
     return resp.json();
 }
@@ -93,10 +91,7 @@ async function githubPut(path, contentBase64, message, sha) {
 
     const resp = await fetch(`${API_BASE}/${path}`, {
         method: 'PUT',
-        headers: {
-            Authorization: `Bearer ${GITHUB_TOKEN}`,
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
     });
     if (!resp.ok) {
