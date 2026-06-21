@@ -39,6 +39,31 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ═══════════════════════════════════════════════════
+//  UTF-8 ENCODING HELPERS
+// ═══════════════════════════════════════════════════
+
+// Safe Base64 encoding that handles Unicode characters properly
+function utf8ToBase64(str) {
+    // Encode as UTF-8 first, then convert to Base64
+    const utf8Bytes = new TextEncoder().encode(str);
+    let binary = '';
+    utf8Bytes.forEach(byte => {
+        binary += String.fromCharCode(byte);
+    });
+    return btoa(binary);
+}
+
+// Safe Base64 decoding that handles Unicode characters properly
+function base64ToUtf8(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+}
+
+// ═══════════════════════════════════════════════════
 //  COUNTDOWN
 // ═══════════════════════════════════════════════════
 
@@ -104,7 +129,8 @@ async function githubPut(path, contentBase64, message, sha) {
 async function fetchRecords() {
     try {
         const data = await githubGet(RECORDS_FILE);
-        const decoded = atob(data.content.replace(/\n/g, ''));
+        // Use base64ToUtf8 for proper Unicode handling
+        const decoded = base64ToUtf8(data.content.replace(/\n/g, ''));
         const parsed = JSON.parse(decoded);
         return { sha: data.sha, entries: parsed.entries || [] };
     } catch (e) {
@@ -115,7 +141,8 @@ async function fetchRecords() {
 
 async function saveRecords(entries, sha) {
     const json = JSON.stringify({ entries: entries }, null, 2);
-    const base64 = btoa(json);
+    // Use utf8ToBase64 to properly encode Chinese characters
+    const base64 = utf8ToBase64(json);
     const result = await githubPut(RECORDS_FILE, base64, 'Update birthday wishes records', sha);
     return result.content.sha;
 }
@@ -510,10 +537,15 @@ async function submitPhotobooth(imageData, name, message) {
 
 // ── Local storage helpers ────────────────────────────
 function getLocalUploads() {
-    try { return JSON.parse(localStorage.getItem('bd_myUploads') || '[]'); }
+    try { 
+        const stored = localStorage.getItem('bd_myUploads');
+        return stored ? JSON.parse(stored) : []; 
+    }
     catch(e) { return []; }
 }
+
 function saveLocalUploads(entries) {
+    // JSON.stringify handles Unicode correctly
     localStorage.setItem('bd_myUploads', JSON.stringify(entries));
 }
 
@@ -521,6 +553,7 @@ function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
+            // Extract just the base64 data (remove data:xxx;base64, prefix)
             const base64 = reader.result.split(',')[1];
             resolve(base64);
         };
@@ -532,8 +565,11 @@ function blobToBase64(blob) {
 async function addEntry(fileOrBlob, type, name, message) {
     const { entries, sha } = await fetchRecords();
 
+    // Allow Chinese characters in filename by using encodeURIComponent
+    const safeName = encodeURIComponent(
+        name.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf\s]/g, '').substring(0, 20)
+    );
     const ext = type === 'photobooth' ? 'png' : type === 'photo' ? 'jpg' : 'webm';
-    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
     const filename = `${type}_${safeName}_${Date.now()}.${ext}`;
 
     const base64 = await blobToBase64(fileOrBlob);
@@ -580,13 +616,18 @@ async function loadGallery() {
 
     section.style.display = 'block';
     document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
+    
     gallery.innerHTML = entries.map((entry, index) => {
             let mediaHtml = '';
+            // Escape HTML entities to prevent XSS but allow Chinese characters
+            const safeName = escapeHtml(entry.name);
+            const safeMessage = escapeHtml(entry.message || 'No message');
+            
             if (entry.type === 'message') {
                 mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
                     <div>
                         <i class="fas fa-comment" style="font-size:3rem;margin-bottom:10px;color:#f5e6d3;"></i>
-                        <p style="color:#f5e6d3;">${entry.name}</p>
+                        <p style="color:#f5e6d3;">${safeName}</p>
                     </div>
                 </div>`;
             } else if (entry.type === 'photobooth') {
@@ -600,15 +641,22 @@ async function loadGallery() {
                     <button class="gallery-item-delete" onclick="event.stopPropagation();deleteEntry(${index})" title="Delete">✕</button>
                     <div class="gallery-item-media">${mediaHtml}</div>
                     <div class="gallery-item-content">
-                        <div class="gallery-item-name">${entry.name}</div>
-                        <div class="gallery-item-message">${entry.message || 'No message'}</div>
-                        <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : entry.type}</div>
+                        <div class="gallery-item-name">${safeName}</div>
+                        <div class="gallery-item-message">${safeMessage}</div>
+                        <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : escapeHtml(entry.type)}</div>
                         <div class="gallery-item-time">${new Date(entry.timestamp).toLocaleString()}</div>
                     </div>
                 </div>
             `;
         }).join('');
+}
 
+// Helper to escape HTML special characters while preserving Unicode/Chinese
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // ═══════════════════════════════════════════════════
@@ -617,12 +665,14 @@ async function loadGallery() {
 
 function openModal(index) {
     const entry = cachedEntries[index];
+    const safeName = escapeHtml(entry.name);
+    const safeMessage = escapeHtml(entry.message || 'No message provided');
 
     if (entry.type === 'message') {
         document.getElementById('modalMedia').innerHTML = `
             <div style="background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);color:#f5e6d3;padding:60px 20px;border-radius:15px;text-align:center;">
                 <i class="fas fa-comment" style="font-size:4rem;margin-bottom:20px;"></i>
-                <p style="font-size:1.2rem;">${entry.name}</p>
+                <p style="font-size:1.2rem;">${safeName}</p>
             </div>
         `;
     } else if (entry.type === 'photobooth') {
