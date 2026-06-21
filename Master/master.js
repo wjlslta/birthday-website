@@ -4,7 +4,7 @@
 
 // ── CONFIG ──────────────────────────────────────────
 const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday_data/main/birthday-wishes/records.json';
-const TARGET_DATE  = '2026-06-19T00:00:00'; // DEBUG — set to yesterday
+const TARGET_DATE  = '2026-06-18T00:00:00'; // DEBUG — set to yesterday
 
 let cachedEntries = [];
 
@@ -28,22 +28,55 @@ function initLock() {
 
     const lock = document.createElement('div');
     lock.id = 'floating-lock';
-    lock.title = unlocked ? 'Unlocked — memories are visible' : 'Locked until June 28';
-    lock.innerHTML = unlocked ? '🔓' : '🔒';
-    lock.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        z-index: 9999;
-        font-size: 2rem;
-        opacity: 0.5;
-        cursor: default;
-        transition: opacity 0.3s;
-        filter: ${unlocked ? 'none' : 'grayscale(100%)'};
+    lock.innerHTML = `
+        <div style="
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            color:#8B6B63;
+            text-align:center;
+            padding:60px 20px;
+            width:100%;
+            height:100%;
+        ">
+            <p style="font-family:'Poppins',sans-serif;font-size:2rem;opacity:0.55;margin:0;font-weight:600;letter-spacing:1px;">
+                Locked until June 28
+            </p>
+        </div>
     `;
-    lock.addEventListener('mouseenter', () => { lock.style.opacity = '0.85'; });
-    lock.addEventListener('mouseleave', () => { lock.style.opacity = '0.5'; });
-    document.body.appendChild(lock);
+    lock.style.cssText = `
+        position: absolute;
+        inset: -20px;
+        z-index: 100001;
+        background: rgba(245,230,211,0.93);
+        border-radius: 15px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.6s ease, opacity 0.6s ease;
+    `;
+
+    const galleryParent = document.querySelector('.gallery-section');
+    if (!galleryParent) return;
+    galleryParent.style.position = 'relative';
+    galleryParent.appendChild(lock);
+
+    // If unlocked, play the unlock animation
+    if (unlocked) {
+        setTimeout(() => {
+            // Slide up slightly (like unlatching)
+            lock.style.transform = 'translateY(-40px)';
+            setTimeout(() => {
+                // Then slide down and fade out
+                lock.style.transform = 'translateY(120%)';
+                lock.style.opacity = '0';
+                setTimeout(() => lock.remove(), 700);
+            }, 800);
+        }, 600);
+    }
 }
 
 function updateCountdown() {

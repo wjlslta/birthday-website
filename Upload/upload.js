@@ -378,6 +378,11 @@ async function addMessageEntry(name, message) {
     };
     entries.push(entry);
     await saveRecords(entries, sha);
+
+    // Also save to localStorage
+    const local = getLocalUploads();
+    local.push(entry);
+    saveLocalUploads(local);
 }
 
 // ═══════════════════════════════════════════════════
@@ -505,8 +510,17 @@ async function submitPhotobooth(imageData, name, message) {
 }
 
 // ═══════════════════════════════════════════════════
-//  SHARED: blob→base64 + add entry to GitHub
+//  SHARED: blob→base64 + add entry to GitHub + localStorage
 // ═══════════════════════════════════════════════════
+
+// ── Local storage helpers ────────────────────────────
+function getLocalUploads() {
+    try { return JSON.parse(localStorage.getItem('bd_myUploads') || '[]'); }
+    catch(e) { return []; }
+}
+function saveLocalUploads(entries) {
+    localStorage.setItem('bd_myUploads', JSON.stringify(entries));
+}
 
 function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
@@ -543,6 +557,11 @@ async function addEntry(fileOrBlob, type, name, message) {
     entries.push(entry);
     await saveRecords(entries, sha);
 
+    // Also save to localStorage so upload page only shows your own
+    const local = getLocalUploads();
+    local.push(entry);
+    saveLocalUploads(local);
+
     loadGallery();
     showSuccess();
     setTimeout(() => showThankYou(), 800);
@@ -555,20 +574,18 @@ async function addEntry(fileOrBlob, type, name, message) {
 async function loadGallery() {
     const gallery = document.getElementById('gallery');
     const section = document.getElementById('gallerySection');
+    const entries = getLocalUploads();
+    cachedEntries = entries;
 
-    try {
-        const { entries } = await fetchRecords();
-        cachedEntries = entries;
+    if (entries.length === 0) {
+        section.style.display = 'none';
+        document.querySelector('.main-content').style.gridTemplateColumns = '1fr';
+        return;
+    }
 
-        if (entries.length === 0) {
-            section.style.display = 'none';
-            document.querySelector('.main-content').style.gridTemplateColumns = '1fr';
-            return;
-        }
-
-        section.style.display = 'block';
-        document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
-        gallery.innerHTML = entries.map((entry, index) => {
+    section.style.display = 'block';
+    document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
+    gallery.innerHTML = entries.map((entry, index) => {
             let mediaHtml = '';
             if (entry.type === 'message') {
                 mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
@@ -597,10 +614,6 @@ async function loadGallery() {
             `;
         }).join('');
 
-    } catch (e) {
-        console.error('Failed to load gallery:', e);
-        section.style.display = 'none';
-    }
 }
 
 // ═══════════════════════════════════════════════════
@@ -637,9 +650,20 @@ function openModal(index) {
 async function deleteEntry(index) {
     if (!confirm('Delete this entry?')) return;
     try {
+        // Remove from GitHub
         const { entries, sha } = await fetchRecords();
-        entries.splice(index, 1);
-        await saveRecords(entries, sha);
+        const entry = cachedEntries[index];
+        const githubIndex = entries.findIndex(e => e.id === entry.id);
+        if (githubIndex !== -1) {
+            entries.splice(githubIndex, 1);
+            await saveRecords(entries, sha);
+        }
+
+        // Remove from localStorage
+        const local = getLocalUploads();
+        local.splice(index, 1);
+        saveLocalUploads(local);
+
         closeModal();
         loadGallery();
     } catch(e) {
