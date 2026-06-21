@@ -4,7 +4,7 @@
 
 // ── CONFIG ──────────────────────────────────────────
 const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday_data/main/birthday-wishes/records.json';
-const TARGET_DATE  = '2026-06-28T00:00:00';
+const TARGET_DATE  = '2026-06-19T00:00:00'; // DEBUG — set to yesterday
 
 let cachedEntries = [];
 
@@ -13,11 +13,38 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCountdown();
     setInterval(updateCountdown, 1000);
     loadGallery();
+    initLock();
 });
 
 // ═══════════════════════════════════════════════════
 //  GALLERY + COUNTDOWN
 // ═══════════════════════════════════════════════════
+
+// ── Floating lock indicator ──────────────────────────
+function initLock() {
+    const target = new Date(TARGET_DATE);
+    const now = new Date();
+    const unlocked = now >= target;
+
+    const lock = document.createElement('div');
+    lock.id = 'floating-lock';
+    lock.title = unlocked ? 'Unlocked — memories are visible' : 'Locked until June 28';
+    lock.innerHTML = unlocked ? '🔓' : '🔒';
+    lock.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        font-size: 2rem;
+        opacity: 0.5;
+        cursor: default;
+        transition: opacity 0.3s;
+        filter: ${unlocked ? 'none' : 'grayscale(100%)'};
+    `;
+    lock.addEventListener('mouseenter', () => { lock.style.opacity = '0.85'; });
+    lock.addEventListener('mouseleave', () => { lock.style.opacity = '0.5'; });
+    document.body.appendChild(lock);
+}
 
 function updateCountdown() {
     const targetDate = new Date(TARGET_DATE).getTime();
@@ -56,7 +83,16 @@ async function loadGallery() {
             return;
         }
 
-        gallery.innerHTML = cachedEntries.map((entry, index) => {
+        // Shuffle for random order
+        const shuffled = [...cachedEntries];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        gallery.innerHTML = shuffled.map((entry) => {
+            // Find original index in cachedEntries for modal lookup
+            const realIndex = cachedEntries.indexOf(entry);
             let mediaHtml = '';
             if (entry.type === 'message') {
                 mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
@@ -72,7 +108,7 @@ async function loadGallery() {
             }
 
             return `
-                <div class="gallery-item" onclick="openModal(${index})">
+                <div class="gallery-item" onclick="openModal(${realIndex})">
                     <div class="gallery-item-media">${mediaHtml}</div>
                     <div class="gallery-item-content">
                         <div class="gallery-item-name">${entry.name}</div>

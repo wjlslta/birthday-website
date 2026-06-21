@@ -1,5 +1,15 @@
-        body {
-            font-family: 'Cormorant Garamond', serif;
+/* ═══════════════════════════════════════════════
+   Upload/main.css
+   ═══════════════════════════════════════════════ */
+
+/* ── Configurable values ── */
+:root {
+    --accent-font: 'Tangerine', cursive;
+}
+
+/* ── Body & background ── */
+body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 50%, #8B6B63 100%);
             background-attachment: fixed;
             min-height: 100vh;
@@ -40,7 +50,8 @@
         }
 
         header h1 {
-            font-size: 3.5rem;
+            font-family: 'Stalemate', cursive;
+            font-size: 4.5rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             font-weight: 700;
@@ -48,13 +59,15 @@
         }
 
         header p {
-            font-size: 1.8rem;
+            font-family: 'Stalemate', cursive;
+            font-size: 2.2rem;
             opacity: 0.95;
             font-weight: 300;
             font-style: italic;
         }
 
         .countdown {
+            font-family: 'Poppins', sans-serif;
             font-size: 1.1rem;
             margin-top: 15px;
             background: rgba(245, 230, 211, 0.15);
@@ -112,12 +125,13 @@
         }
 
         .section-title {
+            font-family: var(--accent-font);
             color: #8B6B63;
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 600;
         }
 
@@ -133,8 +147,8 @@
             padding: 12px 20px;
             border: none;
             background: none;
-            font-size: 1rem;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: var(--accent-font);
+            font-size: 1.3rem;
             font-weight: 600;
             color: #999;
             cursor: pointer;
@@ -205,11 +219,11 @@
         }
 
         .btn {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             padding: 12px 24px;
             border: none;
             border-radius: 10px;
             font-size: 1rem;
-            font-family: 'Cormorant Garamond', serif;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -299,6 +313,7 @@
             gap: 10px;
             margin-bottom: 15px;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .frame-option {
@@ -366,7 +381,6 @@
             padding: 12px 15px;
             border: 2px solid #D4A574;
             border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
             font-size: 1rem;
             background: rgba(255, 255, 255, 0.7);
             transition: all 0.3s ease;
@@ -390,12 +404,13 @@
         }
 
         .gallery-section h2 {
+            font-family: var(--accent-font);
             color: #f5e6d3;
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 600;
         }
 
@@ -407,7 +422,7 @@
         }
 
         .gallery-item {
-            width: 280px;
+            width: 40%;
             flex-shrink: 0;
             background: #f5e6d3;
             border-radius: 15px;
@@ -447,10 +462,11 @@
         }
 
         .gallery-item-name {
+            font-family: var(--accent-font);
             font-weight: 600;
             color: #8B6B63;
             margin-bottom: 8px;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
         }
 
         .gallery-item-message {
@@ -478,16 +494,27 @@
             margin-top: 8px;
         }
 
-        .gallery-item-actions {
-            display: none;
-            gap: 8px;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #D4A574;
-        }
-
-        .gallery-item.admin .gallery-item-actions {
+        .gallery-item-delete {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.45);
+            color: #fff;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+        .gallery-item-delete:hover {
+            background: #c0392b;
         }
 
         .empty-gallery {
@@ -633,7 +660,6 @@
             padding: 12px 30px;
             border-radius: 25px;
             font-size: 1rem;
-            font-family: 'Cormorant Garamond', serif;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;

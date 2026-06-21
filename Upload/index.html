@@ -6,7 +6,9 @@
     <title>Janice's Birthday Website</title>
     <link rel="stylesheet" href="main.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stalemate&family=Tangerine:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -44,7 +46,7 @@
                     </div>
 
                     <div id="video" class="tab-content">
-                        <p style="margin-bottom: 15px; color: #666;">🎥 Recommended under 3 min at 720p — stays safely under GitHub's 100MB file limit</p>
+                        <p style="margin-bottom: 15px; color: #666;">🎥 Record a video for Janice!! </p>
                         <div class="video-controls">
                             <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
                                 <i class="fas fa-circle"></i> Start Recording
@@ -69,8 +71,8 @@
 
                     <div id="photobooth" class="tab-content">
                         <div class="photobooth-container">
-                            <div style="margin-bottom: 15px;">
-                                <label style="color: #8B6B63; font-weight: 600;">Choose Frame:</label>
+                            <div style="text-align:center;">
+                                <label style="color: #8B6B63; font-weight: 600; display:block; margin-bottom:8px;">Choose Frame:</label>
                                 <div class="frame-selector">
                                     <button class="frame-option active" onclick="selectFrame('classic')">Classic</button>
                                     <button class="frame-option" onclick="selectFrame('hearts')">Hearts 🤎</button>
@@ -105,15 +107,10 @@
                 </div>
             </div>
 
-            <!-- Gallery Section -->
-            <div class="gallery-section">
+            <!-- Gallery Section (hidden until first entry) -->
+            <div class="gallery-section" id="gallerySection" style="display:none;">
                 <h2><i class="fas fa-images"></i> Gallery</h2>
-                <div class="gallery" id="gallery">
-                    <div class="empty-gallery">
-                        <i class="fas fa-inbox"></i>
-                        <p>No memories yet.<br>Be the first to share! 💝</p>
-                    </div>
-                </div>
+                <div class="gallery" id="gallery"></div>
             </div>
         </div>
     </div>
@@ -127,28 +124,6 @@
                 <h3 id="modalName"></h3>
                 <p id="modalMessage"></p>
                 <small id="modalTime" style="color: #999;"></small>
-                <div class="modal-actions" id="modalActions"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Password Modal for Delete -->
-    <div class="modal" id="passwordModal" onclick="closePasswordModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 400px;">
-            <button class="modal-close" onclick="closePasswordModal()">✕</button>
-            <div class="modal-info" style="text-align: center;">
-                <h3>Enter Password to Delete</h3>
-                <p style="color: #666; margin-bottom: 20px;">This entry requires a password to delete</p>
-                <input type="password" id="deletePassword" placeholder="Enter password" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 5px; margin-bottom: 15px; font-size: 1rem;">
-                <div class="modal-actions" style="display: flex; gap: 10px; justify-content: center;">
-                    <button class="btn btn-primary" onclick="verifyPassword()">
-                        <i class="fas fa-check"></i> Verify
-                    </button>
-                    <button class="btn btn-secondary" onclick="closePasswordModal()">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-                <div id="passwordError" style="color: #d32f2f; margin-top: 10px; display: none;"></div>
             </div>
         </div>
     </div>

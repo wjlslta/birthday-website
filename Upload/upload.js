@@ -4,7 +4,7 @@
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const GITHUB_TOKEN   = 'github...k37T';
+const GITHUB_TOKEN='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';
 const REPO_OWNER     = 'wjlslta';
 const REPO_NAME      = 'birthday_data';
 const UPLOAD_PATH    = 'birthday-wishes';
@@ -12,7 +12,6 @@ const RECORDS_FILE   = 'birthday-wishes/records.json';
 const RAW_BASE       = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
 const API_BASE       = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
 const TARGET_DATE    = '2026-06-28T00:00:00';
-const DELETE_PASSWORD = '0304';
 
 // ── Video recording config ──────────────────────────
 const VIDEO_MAX_DURATION = 180;              // seconds (3 min)
@@ -29,7 +28,6 @@ let isRecording      = false;
 let recordingTime    = 0;
 let currentFrame     = 'classic';
 let photoboothStream = null;
-let pendingDeleteIndex = null;
 let cachedEntries    = [];
 
 // ── Init ───────────────────────────────────────────
@@ -147,9 +145,9 @@ function injectUploadForm(containerId, onSubmit) {
     const formHtml = `
         <div id="${formId}" class="upload-form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
             <input type="text" id="${formId}-name" placeholder="Your name *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:'Poppins',sans-serif;font-size:0.95rem;background:rgba(255,255,255,0.8);">
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-size:0.95rem;background:rgba(255,255,255,0.8);">
             <textarea id="${formId}-message" placeholder="Write a birthday message... *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:'Poppins',sans-serif;font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
             <button class="btn btn-primary" id="${formId}-submit">
                 <i class="fas fa-upload"></i> Upload
             </button>
@@ -556,21 +554,20 @@ async function addEntry(fileOrBlob, type, name, message) {
 
 async function loadGallery() {
     const gallery = document.getElementById('gallery');
+    const section = document.getElementById('gallerySection');
 
     try {
         const { entries } = await fetchRecords();
         cachedEntries = entries;
 
         if (entries.length === 0) {
-            gallery.innerHTML = `
-                <div class="empty-gallery">
-                    <i class="fas fa-inbox"></i>
-                    <p>No memories yet.<br>Be the first to share! 💝</p>
-                </div>
-            `;
+            section.style.display = 'none';
+            document.querySelector('.main-content').style.gridTemplateColumns = '1fr';
             return;
         }
 
+        section.style.display = 'block';
+        document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
         gallery.innerHTML = entries.map((entry, index) => {
             let mediaHtml = '';
             if (entry.type === 'message') {
@@ -587,21 +584,14 @@ async function loadGallery() {
             }
 
             return `
-                <div class="gallery-item admin" onclick="openModal(${index})">
+                <div class="gallery-item" onclick="openModal(${index})">
+                    <button class="gallery-item-delete" onclick="event.stopPropagation();deleteEntry(${index})" title="Delete">✕</button>
                     <div class="gallery-item-media">${mediaHtml}</div>
                     <div class="gallery-item-content">
                         <div class="gallery-item-name">${entry.name}</div>
                         <div class="gallery-item-message">${entry.message || 'No message'}</div>
                         <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : entry.type}</div>
                         <div class="gallery-item-time">${new Date(entry.timestamp).toLocaleString()}</div>
-                        <div class="gallery-item-actions" onclick="event.stopPropagation()">
-                            <button class="btn btn-secondary btn-sm" onclick="downloadEntry(${index})">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="requestDeleteEntry(${index})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
                     </div>
                 </div>
             `;
@@ -609,12 +599,7 @@ async function loadGallery() {
 
     } catch (e) {
         console.error('Failed to load gallery:', e);
-        gallery.innerHTML = `
-            <div class="empty-gallery">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Couldn't load memories.<br>Check back soon! 💝</p>
-            </div>
-        `;
+        section.style.display = 'none';
     }
 }
 
@@ -642,76 +627,21 @@ function openModal(index) {
     document.getElementById('modalMessage').textContent = entry.message || 'No message provided';
     document.getElementById('modalTime').textContent = new Date(entry.timestamp).toLocaleString();
 
-    document.getElementById('modalActions').innerHTML = `
-        <button class="btn btn-secondary" onclick="downloadEntry(${index})">
-            <i class="fas fa-download"></i> Download
-        </button>
-        <button class="btn btn-danger" onclick="requestDeleteEntry(${index})">
-            <i class="fas fa-trash"></i> Delete
-        </button>
-    `;
-
     document.getElementById('modal').classList.add('active');
 }
 
-function downloadEntry(index) {
-    const entry = cachedEntries[index];
-
-    if (entry.type === 'message') {
-        const element = document.createElement('a');
-        const file = new Blob([`From: ${entry.name}\n\n${entry.message}`], {type: 'text/plain'});
-        element.href = URL.createObjectURL(file);
-        element.download = `message_${entry.name}_${Date.now()}.txt`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    } else if (entry.url) {
-        const element = document.createElement('a');
-        element.href = entry.url;
-        element.download = entry.filename || `${entry.type}_${Date.now()}`;
-        element.target = '_blank';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-}
-
 // ═══════════════════════════════════════════════════
-//  DELETE
+//  DELETE (confirm once, no password)
 // ═══════════════════════════════════════════════════
-
-function requestDeleteEntry(index) {
-    pendingDeleteIndex = index;
-    document.getElementById('deletePassword').value = '';
-    document.getElementById('passwordError').style.display = 'none';
-    document.getElementById('passwordModal').classList.add('active');
-    document.getElementById('deletePassword').focus();
-}
-
-function verifyPassword() {
-    const password = document.getElementById('deletePassword').value;
-    const errorDiv = document.getElementById('passwordError');
-
-    if (password === DELETE_PASSWORD) {
-        closePasswordModal();
-        deleteEntry(pendingDeleteIndex);
-        pendingDeleteIndex = null;
-    } else {
-        errorDiv.textContent = '❌ Incorrect password. Please try again.';
-        errorDiv.style.display = 'block';
-        document.getElementById('deletePassword').value = '';
-        document.getElementById('deletePassword').focus();
-    }
-}
 
 async function deleteEntry(index) {
+    if (!confirm('Delete this entry?')) return;
     try {
         const { entries, sha } = await fetchRecords();
         entries.splice(index, 1);
         await saveRecords(entries, sha);
         closeModal();
         loadGallery();
-        alert('Entry deleted successfully!');
     } catch(e) {
         alert('Failed to delete: ' + e.message);
     }
@@ -724,12 +654,6 @@ async function deleteEntry(index) {
 function closeModal(event) {
     if (event && event.target.id !== 'modal') return;
     document.getElementById('modal').classList.remove('active');
-}
-
-function closePasswordModal(event) {
-    if (event && event.target.id !== 'passwordModal') return;
-    document.getElementById('passwordModal').classList.remove('active');
-    pendingDeleteIndex = null;
 }
 
 function showSuccess() {
@@ -751,9 +675,5 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeModal();
         closeThankYou();
-        closePasswordModal();
-    }
-    if (e.key === 'Enter' && document.getElementById('passwordModal').classList.contains('active')) {
-        verifyPassword();
     }
 });
