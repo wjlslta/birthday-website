@@ -3,18 +3,22 @@
 // ║  loads from GitHub: birthday-wishes/records.json ║
 // ╚══════════════════════════════════════════════════╝
 
-const RECORDS_URL = 'https://raw.githubusercontent.com/wjlslta/birthday-website/main/birthday-wishes/records.json';
+// ── CONFIG ──────────────────────────────────────────
+const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday-website/main/birthday-wishes/records.json';
+const TARGET_DATE  = '2026-06-28T00:00:00';
+
 let cachedEntries = [];
 
+// ── Init ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     updateCountdown();
     setInterval(updateCountdown, 1000);
     loadGallery();
 });
 
-// ── Countdown (same target as upload site) ──
+// ── Countdown ──────────────────────────────────────
 function updateCountdown() {
-    const targetDate = new Date('2026-06-28T00:00:00').getTime();
+    const targetDate = new Date(TARGET_DATE).getTime();
     const now = new Date().getTime();
     const distance = targetDate - now;
 
@@ -54,16 +58,16 @@ async function loadGallery() {
         gallery.innerHTML = cachedEntries.map((entry, index) => {
             let mediaHtml = '';
             if (entry.type === 'message') {
-                mediaHtml = `<div style="width: 100%; padding: 20px; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); border-radius: 10px;">
+                mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
                     <div>
-                        <i class="fas fa-comment" style="font-size: 3rem; margin-bottom: 10px; color: #f5e6d3;"></i>
-                        <p style="color: #f5e6d3;">${entry.name}</p>
+                        <i class="fas fa-comment" style="font-size:3rem;margin-bottom:10px;color:#f5e6d3;"></i>
+                        <p style="color:#f5e6d3;">${entry.name}</p>
                     </div>
                 </div>`;
             } else if (entry.type === 'photobooth') {
-                mediaHtml = `<img src="${entry.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="photobooth" loading="lazy">`;
+                mediaHtml = `<img src="${entry.url}" style="width:100%;height:100%;object-fit:cover;" alt="photobooth" loading="lazy">`;
             } else {
-                mediaHtml = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                mediaHtml = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;height:100%;object-fit:cover;" loading="lazy">`;
             }
 
             return `
@@ -96,15 +100,15 @@ function openModal(index) {
 
     if (entry.type === 'message') {
         document.getElementById('modalMedia').innerHTML = `
-            <div style="background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); color: #f5e6d3; padding: 60px 20px; border-radius: 15px; text-align: center;">
-                <i class="fas fa-comment" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                <p style="font-size: 1.2rem;">${entry.name}</p>
+            <div style="background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);color:#f5e6d3;padding:60px 20px;border-radius:15px;text-align:center;">
+                <i class="fas fa-comment" style="font-size:4rem;margin-bottom:20px;"></i>
+                <p style="font-size:1.2rem;">${entry.name}</p>
             </div>
         `;
     } else if (entry.type === 'photobooth') {
-        document.getElementById('modalMedia').innerHTML = `<img src="${entry.url}" style="width: 100%; border-radius: 15px;" alt="photobooth">`;
+        document.getElementById('modalMedia').innerHTML = `<img src="${entry.url}" style="width:100%;border-radius:15px;" alt="photobooth">`;
     } else {
-        document.getElementById('modalMedia').innerHTML = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width: 100%; border-radius: 15px;">`;
+        document.getElementById('modalMedia').innerHTML = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;border-radius:15px;">`;
     }
 
     document.getElementById('modalName').textContent = entry.name;
@@ -148,7 +152,5 @@ function closeModal(event) {
 }
 
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeModal();
-    }
+    if (e.key === 'Escape') closeModal();
 });

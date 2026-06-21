@@ -4,7 +4,7 @@
 const CONFIG = {
   // When the surprise unlocks. Uses LOCAL time (same as the countdown site).
   // June 28, midnight in the viewer's timezone.
-  TARGET_DATE: '2026-06-18T00:00:00',
+  TARGET_DATE: '2026-06-28T00:00:00',
 
   // The original countdown site
   ORIGINAL_URL: 'https://wjlslta.github.io/birthday-website/',
