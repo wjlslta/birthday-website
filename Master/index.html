@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Janice's Birthday Gallery</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="surprise.css">
+    <style>
+        /* Master view: gallery takes full width */
+        .master-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .master-content .gallery-section {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- SURPRISE OVERLAY — shown after countdown   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="overlay" class="hidden">
+    <div id="phase-initial" class="phase">
+      <h1>🎉 Happy Birthday! 🎂</h1>
+      <p class="subtitle">Guess what, are you janice??</p>
+      <div class="btn-row">
+        <button class="btn-secondary" id="btn-skip">No</button>
+        <button class="btn-primary"   id="btn-surprise">Yes</button>
+      </div>
+    </div>
+
+    <div id="phase-password" class="phase">
+      <h1>🔐</h1>
+      <p class="subtitle">When's my birthday👀</p>
+      <div class="password-form">
+        <input type="password" id="password-input" placeholder="Enter password..." autocomplete="off">
+        <button class="btn-primary" id="btn-password-submit">Unlock</button>
+        <p class="error-msg" id="password-error"></p>
+      </div>
+    </div>
+
+    <div id="phase-game" class="phase">
+      <p class="message" id="game-message"></p>
+      <div id="game-area"></div>
+    </div>
+  </div>
+
+  <div id="finale">
+    <div class="finale-text" id="finale-text"></div>
+  </div>
+
+    <div class="container">
+        <header>
+            <h1>Happy 19th Birthday to Janice 🤎</h1>
+            <p>Memories from everyone who loves you</p>
+            <div class="countdown" id="countdown">Loading...</div>
+        </header>
+
+        <div class="divider">✦ ✦ ✦</div>
+
+        <div class="master-content">
+            <!-- Gallery Section — full width, read-only -->
+            <div class="gallery-section">
+                <h2><i class="fas fa-images"></i> Memories for Janice</h2>
+                <div class="gallery" id="gallery">
+                    <div class="empty-gallery">
+                        <i class="fas fa-inbox"></i>
+                        <p>No memories yet.<br>Check back soon! 💝</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for viewing entries (view + download only, no delete) -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-media" id="modalMedia"></div>
+            <div class="modal-info">
+                <h3 id="modalName"></h3>
+                <p id="modalMessage"></p>
+                <small id="modalTime" style="color: #999;"></small>
+                <div class="modal-actions" id="modalActions"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="master.js"></script>
+    <script src="surprise.js"></script>
+</body>
+</html>
