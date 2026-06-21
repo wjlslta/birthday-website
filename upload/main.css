@@ -10,30 +10,13 @@
 /* ── Body & background ── */
 body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 50%, #8B6B63 100%);
-            background-attachment: fixed;
+            background: url('background.jpg') top center/125% auto repeat-y scroll;
             min-height: 100vh;
             padding: 20px;
             overflow-x: hidden;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 50px,
-                rgba(139, 107, 99, 0.3) 50px,
-                rgba(139, 107, 99, 0.3) 100px
-            );
-            pointer-events: none;
-            z-index: 0;
-        }
+/* ── Body & background ── */
 
         .container {
             max-width: 1400px;

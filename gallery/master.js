@@ -5,7 +5,7 @@
 // ── CONFIG ──────────────────────────────────────────
 const WORKER_URL    = 'https://birthdaydata.janicellchancl.workers.dev';
 const RECORDS_URL   = `${WORKER_URL}/wjlslta/birthday_data/contents/birthday-wishes/records.json`;
-const TARGET_DATE  = '2026-06-18T00:00:00'; // DEBUG — set to yesterday
+const TARGET_DATE  = '2026-06-28T00:00:00';
 
 let cachedEntries = [];
 
