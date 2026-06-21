@@ -378,6 +378,7 @@ body {
 
         .message-form input,
         .message-form textarea {
+            font-family: var(--accent-font);
             padding: 12px 15px;
             border: 2px solid #D4A574;
             border-radius: 10px;

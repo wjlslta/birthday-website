@@ -4,7 +4,7 @@
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const GITHUB_TOKEN='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';
+const GITHUB_TOKEN='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';
 const REPO_OWNER     = 'wjlslta';
 const REPO_NAME      = 'birthday_data';
 const UPLOAD_PATH    = 'birthday-wishes';
@@ -145,9 +145,9 @@ function injectUploadForm(containerId, onSubmit) {
     const formHtml = `
         <div id="${formId}" class="upload-form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
             <input type="text" id="${formId}-name" placeholder="Your name *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-size:0.95rem;background:rgba(255,255,255,0.8);">
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:var(--accent-font);font-size:0.95rem;background:rgba(255,255,255,0.8);">
             <textarea id="${formId}-message" placeholder="Write a birthday message... *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:var(--accent-font);font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
             <button class="btn btn-primary" id="${formId}-submit">
                 <i class="fas fa-upload"></i> Upload
             </button>
