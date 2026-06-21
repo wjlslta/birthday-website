@@ -3,7 +3,8 @@
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday_data/main/birthday-wishes/records.json';
+const WORKER_URL    = 'https://birthdaydata.janicellchancl.workers.dev';
+const RECORDS_URL   = `${WORKER_URL}/wjlslta/birthday_data/contents/birthday-wishes/records.json`;
 const TARGET_DATE  = '2026-06-18T00:00:00'; // DEBUG — set to yesterday
 
 let cachedEntries = [];
@@ -104,7 +105,10 @@ async function loadGallery() {
         const resp = await fetch(RECORDS_URL);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-        cachedEntries = data.entries || [];
+        // GitHub API returns base64 content — decode it
+        const decoded = data.content ? atob(data.content.replace(/\n/g, '')) : '{"entries":[]}';
+        const parsed = JSON.parse(decoded);
+        cachedEntries = parsed.entries || [];
 
         if (cachedEntries.length === 0) {
             gallery.innerHTML = `

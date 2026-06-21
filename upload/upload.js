@@ -10,7 +10,7 @@ const REPO_NAME      = 'birthday_data';
 const UPLOAD_PATH    = 'birthday-wishes';
 const RECORDS_FILE   = 'birthday-wishes/records.json';
 const RAW_BASE       = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
-const API_BASE       = `${WORKER_URL}/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+const API_BASE       = `${WORKER_URL}/${REPO_OWNER}/${REPO_NAME}/contents`;
 const TARGET_DATE    = '2026-06-28T00:00:00';
 
 // ── Video recording config ──────────────────────────
