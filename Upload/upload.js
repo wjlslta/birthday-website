@@ -1,26 +1,36 @@
 // ╔══════════════════════════════════════════════════╗
 // ║  upload.js — birthday wishes uploader + gallery  ║
-// ║  stores everything in GitHub: birthday-wishes/   ║
+// ║  stores in GitHub: wjlslta/birthday_data         ║
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const GITHUB_TOKEN = 'YOUR_GITHUB_PAT_HERE'; // ← PASTE YOUR TOKEN HERE
-const REPO_OWNER   = 'wjlslta';
-const REPO_NAME    = 'birthday-website';
-const UPLOAD_PATH  = 'birthday-wishes';           // folder in repo
-const RECORDS_FILE = 'birthday-wishes/records.json';
-const RAW_BASE     = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
-const API_BASE     = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+const GITHUB_TOKEN   = 'github...k37T';
+const REPO_OWNER     = 'wjlslta';
+const REPO_NAME      = 'birthday_data';
+const UPLOAD_PATH    = 'birthday-wishes';
+const RECORDS_FILE   = 'birthday-wishes/records.json';
+const RAW_BASE       = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
+const API_BASE       = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+const TARGET_DATE    = '2026-06-28T00:00:00';
+const DELETE_PASSWORD = '0304';
 
-let mediaFile     = null;
-let videoRecorder = null;
-let recordedChunks = [];
-let isRecording    = false;
-let recordingTime  = 0;
-let currentFrame   = 'classic';
+// ── Video recording config ──────────────────────────
+const VIDEO_MAX_DURATION = 180;              // seconds (3 min)
+const VIDEO_BITRATE      = 2500000;          // 2.5 Mbps — keeps 3-min video ~56MB (well under GitHub 100MB limit)
+const VIDEO_WIDTH        = 1280;             // 720p
+const VIDEO_HEIGHT       = 720;
+const VIDEO_FRAMERATE    = 30;
+
+// ── State ──────────────────────────────────────────
+let mediaFile        = null;
+let videoRecorder    = null;
+let recordedChunks   = [];
+let isRecording      = false;
+let recordingTime    = 0;
+let currentFrame     = 'classic';
 let photoboothStream = null;
 let pendingDeleteIndex = null;
-const CORRECT_PASSWORD = '0304';
+let cachedEntries    = [];
 
 // ── Init ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
@@ -30,9 +40,12 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDropZone();
 });
 
-// ── Countdown ──────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  COUNTDOWN
+// ═══════════════════════════════════════════════════
+
 function updateCountdown() {
-    const targetDate = new Date('2026-06-28T00:00:00').getTime();
+    const targetDate = new Date(TARGET_DATE).getTime();
     const now = new Date().getTime();
     const distance = targetDate - now;
 
@@ -49,7 +62,10 @@ function updateCountdown() {
     document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s until the celebration!`;
 }
 
-// ── Tabs ───────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════
+
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -57,45 +73,9 @@ function switchTab(tabName) {
     event.target.classList.add('active');
 }
 
-// ── Drop zone ──────────────────────────────────────
-function setupDropZone() {
-    const dropZone = document.getElementById('dropZone');
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('dragover');
-    });
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        handlePhotoUpload(e.dataTransfer.files[0]);
-    });
-}
-
-document.getElementById('photoInput').addEventListener('change', (e) => {
-    handlePhotoUpload(e.target.files[0]);
-});
-
-function handlePhotoUpload(file) {
-    if (!file) return;
-    mediaFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        document.getElementById('photoPreview').innerHTML = `
-            <img src="${e.target.result}" alt="preview">
-            <button class="btn btn-primary" style="margin-top: 15px;" onclick="submitPhoto()">
-                <i class="fas fa-upload"></i> Upload Photo
-            </button>
-        `;
-    };
-    reader.readAsDataURL(file);
-}
-
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 //  GITHUB API HELPERS
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 
 async function githubGet(path) {
     const resp = await fetch(`${API_BASE}/${path}`, {
@@ -128,55 +108,110 @@ async function githubPut(path, contentBase64, message, sha) {
     return resp.json();
 }
 
-// reads records.json from GitHub, returns { sha, entries }
 async function fetchRecords() {
     try {
         const data = await githubGet(RECORDS_FILE);
-        // content is base64-encoded in GitHub API
         const decoded = atob(data.content.replace(/\n/g, ''));
         const parsed = JSON.parse(decoded);
         return { sha: data.sha, entries: parsed.entries || [] };
     } catch (e) {
-        // file doesn't exist yet — create it
         console.log('records.json not found, starting fresh');
         return { sha: null, entries: [] };
     }
 }
 
-// saves records.json back to GitHub
 async function saveRecords(entries, sha) {
     const json = JSON.stringify({ entries: entries }, null, 2);
-    const base64 = btoa(unescape(encodeURIComponent(json)));
+    const base64 = btoa(json);
     const result = await githubPut(RECORDS_FILE, base64, 'Update birthday wishes records', sha);
-    return result.content.sha; // return new SHA
+    return result.content.sha;
 }
 
-// upload a file (photo/video/photobooth) to birthday-wishes/ folder
 async function uploadFile(filename, base64Data) {
     await githubPut(`${UPLOAD_PATH}/${filename}`, base64Data, `Add ${filename}`);
 }
 
-// ═════════════════════════════════════════════════════
-//  SUBMISSION FLOWS
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  UPLOAD FORM (injected into preview areas)
+// ═══════════════════════════════════════════════════
 
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            // strip data:... prefix
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+// Inject name+message form into a preview container.
+// callback(name, message) is called on submit.
+function injectUploadForm(containerId, onSubmit) {
+    const container = document.getElementById(containerId);
+    const formId = containerId + '-form';
+
+    // Don't double-inject
+    if (document.getElementById(formId)) return;
+
+    const formHtml = `
+        <div id="${formId}" class="upload-form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
+            <input type="text" id="${formId}-name" placeholder="Your name *" required
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:'Poppins',sans-serif;font-size:0.95rem;background:rgba(255,255,255,0.8);">
+            <textarea id="${formId}-message" placeholder="Write a birthday message... *" required
+                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:'Poppins',sans-serif;font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
+            <button class="btn btn-primary" id="${formId}-submit">
+                <i class="fas fa-upload"></i> Upload
+            </button>
+            <p id="${formId}-error" style="color:#d32f2f;font-size:0.85rem;display:none;"></p>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', formHtml);
+
+    document.getElementById(`${formId}-submit`).addEventListener('click', () => {
+        const name = document.getElementById(`${formId}-name`).value.trim();
+        const message = document.getElementById(`${formId}-message`).value.trim();
+        const errorEl = document.getElementById(`${formId}-error`);
+
+        if (!name || !message) {
+            errorEl.textContent = 'Please fill in both your name and message.';
+            errorEl.style.display = 'block';
+            return;
+        }
+        errorEl.style.display = 'none';
+        onSubmit(name, message);
     });
 }
 
-async function submitPhoto() {
+// ═══════════════════════════════════════════════════
+//  PHOTO UPLOAD
+// ═══════════════════════════════════════════════════
+
+function setupDropZone() {
+    const dropZone = document.getElementById('dropZone');
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handlePhotoFile(e.dataTransfer.files[0]);
+    });
+}
+
+document.getElementById('photoInput').addEventListener('change', (e) => {
+    handlePhotoFile(e.target.files[0]);
+});
+
+function handlePhotoFile(file) {
+    if (!file) return;
+    mediaFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('photoPreview').innerHTML = `
+            <img src="${e.target.result}" alt="preview" style="max-width:100%;border-radius:10px;">
+        `;
+        injectUploadForm('photoPreview', submitPhoto);
+    };
+    reader.readAsDataURL(file);
+}
+
+async function submitPhoto(name, message) {
     if (!mediaFile) return;
-    const name = prompt("What's your name?") || 'Anonymous';
-    const message = prompt('Write a short message (optional)') || '';
     try {
         await addEntry(mediaFile, 'photo', name, message);
         resetPhotoTab();
@@ -185,10 +220,112 @@ async function submitPhoto() {
     }
 }
 
-async function submitVideo() {
+function resetPhotoTab() {
+    document.getElementById('photoInput').value = '';
+    document.getElementById('photoPreview').innerHTML = '';
+    mediaFile = null;
+}
+
+// ═══════════════════════════════════════════════════
+//  VIDEO RECORDING
+// ═══════════════════════════════════════════════════
+
+async function startRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: VIDEO_WIDTH },
+                height: { ideal: VIDEO_HEIGHT },
+                frameRate: { ideal: VIDEO_FRAMERATE }
+            },
+            audio: true
+        });
+
+        const videoEl = document.createElement('video');
+        videoEl.id = 'recordingVideo';
+        videoEl.style.display = 'none';
+        videoEl.srcObject = stream;
+        videoEl.play();
+        document.body.appendChild(videoEl);
+
+        const mediaRecorder = new MediaRecorder(stream, {
+            videoBitsPerSecond: VIDEO_BITRATE,
+            mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+                ? 'video/webm;codecs=vp8'
+                : 'video/webm'
+        });
+
+        recordedChunks = [];
+        isRecording = true;
+        recordingTime = 0;
+
+        mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            mediaFile = blob;
+            stream.getTracks().forEach(track => track.stop());
+            videoEl.remove();
+
+            const videoUrl = URL.createObjectURL(blob);
+            document.getElementById('videoPreviewContainer').innerHTML = `
+                <video controls style="margin-top:15px;width:100%;border-radius:10px;max-height:300px;"></video>
+            `;
+            document.querySelector('#videoPreviewContainer video').src = videoUrl;
+            isRecording = false;
+
+            // Inject name+message form for video upload
+            injectUploadForm('videoPreviewContainer', submitVideo);
+        };
+
+        videoRecorder = mediaRecorder;
+        mediaRecorder.start(1000); // collect data every second
+
+        document.getElementById('startRecordBtn').style.display = 'none';
+        document.getElementById('stopRecordBtn').style.display = 'flex';
+        document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording...</div>';
+
+        updateRecordingTimer();
+    } catch (error) {
+        alert('Could not access camera. Please check permissions.');
+    }
+}
+
+function stopRecording(recorder = videoRecorder) {
+    if (recorder) {
+        recorder.stop();
+        document.getElementById('startRecordBtn').style.display = 'flex';
+        document.getElementById('stopRecordBtn').style.display = 'none';
+        document.getElementById('recordingStatus').innerHTML = '';
+        isRecording = false;
+    }
+}
+
+function updateRecordingTimer() {
+    if (!isRecording) return;
+    recordingTime++;
+    const mins = Math.floor(recordingTime / 60);
+    const secs = recordingTime % 60;
+    const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+    const remaining = VIDEO_MAX_DURATION - recordingTime;
+
+    let statusHtml = `<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording... ${timeStr}</div>`;
+
+    if (remaining <= 30) {
+        statusHtml += `<p style="color:#ff9800;font-size:0.9rem;margin-top:5px;">⚠ ${remaining}s remaining</p>`;
+    }
+
+    document.getElementById('recordingStatus').innerHTML = statusHtml;
+
+    if (recordingTime >= VIDEO_MAX_DURATION) {
+        stopRecording(videoRecorder);
+        return;
+    }
+
+    setTimeout(updateRecordingTimer, 1000);
+}
+
+async function submitVideo(name, message) {
     if (!mediaFile) return;
-    const name = prompt("What's your name?") || 'Anonymous';
-    const message = prompt('Write a short message (optional)') || '';
     try {
         await addEntry(mediaFile, 'video', name, message);
         resetVideoTab();
@@ -197,76 +334,57 @@ async function submitVideo() {
     }
 }
 
-async function submitAll(event) {
+function resetVideoTab() {
+    const videoEl = document.getElementById('recordingVideo');
+    if (videoEl) videoEl.remove();
+    document.getElementById('videoPreviewContainer').innerHTML = '';
+    mediaFile = null;
+    recordedChunks = [];
+}
+
+// ═══════════════════════════════════════════════════
+//  MESSAGE
+// ═══════════════════════════════════════════════════
+
+function submitMessage(event) {
     event.preventDefault();
-    const name = document.getElementById('userName').value;
-    const message = document.getElementById('userMessage').value;
+    const name = document.getElementById('userName').value.trim();
+    const message = document.getElementById('userMessage').value.trim();
 
-    try {
-        const { entries, sha } = await fetchRecords();
-        const entry = {
-            id: crypto.randomUUID(),
-            type: 'message',
-            name: name,
-            message: message,
-            filename: null,
-            url: null,
-            timestamp: new Date().toISOString()
-        };
-        entries.push(entry);
-        await saveRecords(entries, sha);
+    if (!name || !message) {
+        alert('Please fill in both your name and message.');
+        return;
+    }
 
+    addMessageEntry(name, message).then(() => {
         document.getElementById('userName').value = '';
         document.getElementById('userMessage').value = '';
         loadGallery();
         showSuccess();
         setTimeout(() => showThankYou(), 800);
-    } catch(e) {
+    }).catch(e => {
         alert('Failed to send message: ' + e.message);
-    }
+    });
 }
 
-async function addToGallery(entry) {
-    // no-op — replaced by GitHub flow, kept for compat
-}
-
-async function addEntry(fileOrBlob, type, name, message) {
-    // 1. Fetch current records
+async function addMessageEntry(name, message) {
     const { entries, sha } = await fetchRecords();
-
-    // 2. Generate filename
-    const ext = type === 'photobooth' ? 'png' : type === 'photo' ? 'jpg' : 'webm';
-    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-    const filename = `${type}_${safeName}_${Date.now()}.${ext}`;
-
-    // 3. Convert to base64 and upload file
-    const base64 = await blobToBase64(fileOrBlob);
-    await uploadFile(filename, base64);
-
-    // 4. Create record entry
     const entry = {
-        id: crypto.randomUUID(),
-        type: type,
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
+        type: 'message',
         name: name,
         message: message,
-        filename: filename,
-        url: `${RAW_BASE}/${UPLOAD_PATH}/${filename}`,
+        filename: null,
+        url: null,
         timestamp: new Date().toISOString()
     };
-
-    // 5. Append to records and save
     entries.push(entry);
     await saveRecords(entries, sha);
-
-    // 6. Refresh gallery
-    loadGallery();
-    showSuccess();
-    setTimeout(() => showThankYou(), 800);
 }
 
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 //  PHOTOBOOTH
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 
 function selectFrame(frame) {
     currentFrame = frame;
@@ -276,7 +394,10 @@ function selectFrame(frame) {
 
 async function startPhotobooth() {
     try {
-        photoboothStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+        photoboothStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: VIDEO_WIDTH }, height: { ideal: VIDEO_HEIGHT } },
+            audio: false
+        });
         document.getElementById('photoboothVideo').srcObject = photoboothStream;
         document.getElementById('startPhotobooth').style.display = 'none';
         document.getElementById('stopPhotobooth').style.display = 'flex';
@@ -318,7 +439,6 @@ function capturePhoto() {
         } else {
             clearInterval(countdownInterval);
             countdownEl.classList.remove('active');
-
             const imageData = canvas.toDataURL('image/png');
             showPhotoboothPreview(imageData);
         }
@@ -327,7 +447,6 @@ function capturePhoto() {
 
 function drawFrame(ctx, width, height) {
     ctx.lineWidth = 8;
-
     switch(currentFrame) {
         case 'classic':
             ctx.strokeStyle = '#D4A574';
@@ -335,7 +454,6 @@ function drawFrame(ctx, width, height) {
             break;
         case 'hearts':
             ctx.strokeStyle = '#8B6B63';
-            ctx.lineWidth = 8;
             ctx.strokeRect(10, 10, width - 20, height - 20);
             ctx.font = 'bold 40px Arial';
             ctx.fillStyle = '#8B6B63';
@@ -350,19 +468,20 @@ function drawFrame(ctx, width, height) {
 function showPhotoboothPreview(imageData) {
     const preview = document.getElementById('photoboothPreview');
     preview.innerHTML = `
-        <img src="${imageData}" alt="photobooth">
-        <div class="photobooth-actions">
+        <img src="${imageData}" alt="photobooth" style="max-width:100%;border-radius:10px;">
+        <div class="photobooth-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
             <button class="btn btn-secondary" onclick="downloadPhotoboothPhoto('${imageData}')">
                 <i class="fas fa-download"></i> Download
-            </button>
-            <button class="btn btn-primary" onclick="addPhotoboothToGallery('${imageData}')">
-                <i class="fas fa-share"></i> Post to Gallery
             </button>
             <button class="btn btn-info" onclick="capturePhoto()">
                 <i class="fas fa-redo"></i> Take Another
             </button>
         </div>
     `;
+    // Inject name+message form below the preview
+    injectUploadForm('photoboothPreview', (name, message) => {
+        submitPhotobooth(imageData, name, message);
+    });
 }
 
 function downloadPhotoboothPhoto(imageData) {
@@ -374,103 +493,73 @@ function downloadPhotoboothPhoto(imageData) {
     document.body.removeChild(link);
 }
 
-async function addPhotoboothToGallery(imageData) {
-    const name = prompt("What's your name?") || 'Anonymous';
-    const message = prompt('Add a message (optional)') || '';
-
-    // Convert data URL to blob for upload
-    const resp = await fetch(imageData);
-    const blob = await resp.blob();
-
+async function submitPhotobooth(imageData, name, message) {
     try {
+        const resp = await fetch(imageData);
+        const blob = await resp.blob();
         await addEntry(blob, 'photobooth', name, message);
         document.getElementById('photoboothPreview').innerHTML = '';
+        showSuccess();
+        setTimeout(() => showThankYou(), 800);
     } catch(e) {
         alert('Upload failed: ' + e.message);
     }
 }
 
-// ═════════════════════════════════════════════════════
-//  VIDEO RECORDING
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  SHARED: blob→base64 + add entry to GitHub
+// ═══════════════════════════════════════════════════
 
-async function startRecording() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        const videoEl = document.createElement('video');
-        videoEl.id = 'recordingVideo';
-        videoEl.style.display = 'none';
-        videoEl.srcObject = stream;
-        videoEl.play();
-        document.body.appendChild(videoEl);
-
-        const mediaRecorder = new MediaRecorder(stream);
-        recordedChunks = [];
-        isRecording = true;
-        recordingTime = 0;
-
-        mediaRecorder.ondataavailable = (e) => recordedChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            mediaFile = blob;
-            stream.getTracks().forEach(track => track.stop());
-            videoEl.remove();
-
-            const videoUrl = URL.createObjectURL(blob);
-            document.getElementById('videoPreviewContainer').innerHTML = `
-                <video controls style="margin-top: 15px; width: 100%; border-radius: 10px;"></video>
-                <button class="btn btn-primary" style="margin-top: 15px;" onclick="submitVideo()">
-                    <i class="fas fa-upload"></i> Upload Video
-                </button>
-            `;
-            document.querySelector('#videoPreviewContainer video').src = videoUrl;
-            isRecording = false;
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
         };
-
-        setTimeout(() => {
-            if (isRecording) stopRecording(mediaRecorder);
-        }, 30000);
-
-        videoRecorder = mediaRecorder;
-        mediaRecorder.start();
-
-        document.getElementById('startRecordBtn').style.display = 'none';
-        document.getElementById('stopRecordBtn').style.display = 'flex';
-        document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording...</div>';
-
-        updateRecordingTimer();
-    } catch (error) {
-        alert('Could not access camera. Please check permissions.');
-    }
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
 }
 
-function stopRecording(recorder = videoRecorder) {
-    if (recorder) {
-        recorder.stop();
-        document.getElementById('startRecordBtn').style.display = 'flex';
-        document.getElementById('stopRecordBtn').style.display = 'none';
-        document.getElementById('recordingStatus').innerHTML = '';
-        isRecording = false;
-    }
+async function addEntry(fileOrBlob, type, name, message) {
+    const { entries, sha } = await fetchRecords();
+
+    const ext = type === 'photobooth' ? 'png' : type === 'photo' ? 'jpg' : 'webm';
+    const safeName = name.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+    const filename = `${type}_${safeName}_${Date.now()}.${ext}`;
+
+    const base64 = await blobToBase64(fileOrBlob);
+    await uploadFile(filename, base64);
+
+    const entry = {
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
+        type: type,
+        name: name,
+        message: message,
+        filename: filename,
+        url: `${RAW_BASE}/${UPLOAD_PATH}/${filename}`,
+        timestamp: new Date().toISOString()
+    };
+
+    entries.push(entry);
+    await saveRecords(entries, sha);
+
+    loadGallery();
+    showSuccess();
+    setTimeout(() => showThankYou(), 800);
 }
 
-function updateRecordingTimer() {
-    if (isRecording) {
-        recordingTime++;
-        document.getElementById('recordingStatus').innerHTML = `<div class="recording-indicator"><i class="fas fa-dot-circle"></i> Recording... ${recordingTime}s</div>`;
-        setTimeout(updateRecordingTimer, 1000);
-    }
-}
-
-// ═════════════════════════════════════════════════════
-//  GALLERY (loaded from GitHub records.json)
-// ═════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+//  GALLERY
+// ═══════════════════════════════════════════════════
 
 async function loadGallery() {
     const gallery = document.getElementById('gallery');
 
     try {
         const { entries } = await fetchRecords();
+        cachedEntries = entries;
 
         if (entries.length === 0) {
             gallery.innerHTML = `
@@ -485,16 +574,16 @@ async function loadGallery() {
         gallery.innerHTML = entries.map((entry, index) => {
             let mediaHtml = '';
             if (entry.type === 'message') {
-                mediaHtml = `<div style="width: 100%; padding: 20px; display: flex; align-items: center; justify-content: center; text-align: center; background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); border-radius: 10px;">
+                mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
                     <div>
-                        <i class="fas fa-comment" style="font-size: 3rem; margin-bottom: 10px; color: #f5e6d3;"></i>
-                        <p style="color: #f5e6d3;">${entry.name}</p>
+                        <i class="fas fa-comment" style="font-size:3rem;margin-bottom:10px;color:#f5e6d3;"></i>
+                        <p style="color:#f5e6d3;">${entry.name}</p>
                     </div>
                 </div>`;
             } else if (entry.type === 'photobooth') {
-                mediaHtml = `<img src="${entry.url}" style="width: 100%; height: 100%; object-fit: cover;" alt="photobooth" loading="lazy">`;
+                mediaHtml = `<img src="${entry.url}" style="width:100%;height:100%;object-fit:cover;" alt="photobooth" loading="lazy">`;
             } else {
-                mediaHtml = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">`;
+                mediaHtml = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;height:100%;object-fit:cover;" loading="lazy">`;
             }
 
             return `
@@ -529,31 +618,24 @@ async function loadGallery() {
     }
 }
 
-// keep a cached copy of entries for modal/download/delete
-let cachedEntries = [];
+// ═══════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════
 
-async function getEntries() {
-    const { entries } = await fetchRecords();
-    cachedEntries = entries;
-    return entries;
-}
-
-// ── Modal ──────────────────────────────────────────
-async function openModal(index) {
-    const entries = await getEntries();
-    const entry = entries[index];
+function openModal(index) {
+    const entry = cachedEntries[index];
 
     if (entry.type === 'message') {
         document.getElementById('modalMedia').innerHTML = `
-            <div style="background: linear-gradient(135deg, #8B6B63 0%, #A67B7B 100%); color: #f5e6d3; padding: 60px 20px; border-radius: 15px; text-align: center;">
-                <i class="fas fa-comment" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                <p style="font-size: 1.2rem;">${entry.name}</p>
+            <div style="background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);color:#f5e6d3;padding:60px 20px;border-radius:15px;text-align:center;">
+                <i class="fas fa-comment" style="font-size:4rem;margin-bottom:20px;"></i>
+                <p style="font-size:1.2rem;">${entry.name}</p>
             </div>
         `;
     } else if (entry.type === 'photobooth') {
-        document.getElementById('modalMedia').innerHTML = `<img src="${entry.url}" style="width: 100%; border-radius: 15px;" alt="photobooth">`;
+        document.getElementById('modalMedia').innerHTML = `<img src="${entry.url}" style="width:100%;border-radius:15px;" alt="photobooth">`;
     } else {
-        document.getElementById('modalMedia').innerHTML = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width: 100%; border-radius: 15px;">`;
+        document.getElementById('modalMedia').innerHTML = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;border-radius:15px;">`;
     }
 
     document.getElementById('modalName').textContent = entry.name;
@@ -594,7 +676,10 @@ function downloadEntry(index) {
     }
 }
 
-// ── Delete (with password) ─────────────────────────
+// ═══════════════════════════════════════════════════
+//  DELETE
+// ═══════════════════════════════════════════════════
+
 function requestDeleteEntry(index) {
     pendingDeleteIndex = index;
     document.getElementById('deletePassword').value = '';
@@ -607,7 +692,7 @@ function verifyPassword() {
     const password = document.getElementById('deletePassword').value;
     const errorDiv = document.getElementById('passwordError');
 
-    if (password === CORRECT_PASSWORD) {
+    if (password === DELETE_PASSWORD) {
         closePasswordModal();
         deleteEntry(pendingDeleteIndex);
         pendingDeleteIndex = null;
@@ -632,7 +717,10 @@ async function deleteEntry(index) {
     }
 }
 
-// ── Modals ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════
+//  MODALS / SUCCESS / KEYBOARD
+// ═══════════════════════════════════════════════════
+
 function closeModal(event) {
     if (event && event.target.id !== 'modal') return;
     document.getElementById('modal').classList.remove('active');
@@ -642,20 +730,6 @@ function closePasswordModal(event) {
     if (event && event.target.id !== 'passwordModal') return;
     document.getElementById('passwordModal').classList.remove('active');
     pendingDeleteIndex = null;
-}
-
-function resetPhotoTab() {
-    document.getElementById('photoInput').value = '';
-    document.getElementById('photoPreview').innerHTML = '';
-    mediaFile = null;
-}
-
-function resetVideoTab() {
-    const videoEl = document.getElementById('recordingVideo');
-    if (videoEl) videoEl.remove();
-    document.getElementById('videoPreviewContainer').innerHTML = '';
-    mediaFile = null;
-    recordedChunks = [];
 }
 
 function showSuccess() {
@@ -673,7 +747,6 @@ function closeThankYou(event) {
     document.getElementById('thankYouModal').classList.remove('active');
 }
 
-// ── Keyboard shortcuts ─────────────────────────────
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeModal();

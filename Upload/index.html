@@ -44,7 +44,7 @@
                     </div>
 
                     <div id="video" class="tab-content">
-                        <p style="margin-bottom: 15px; color: #666;">Click start to record your birthday message (max 30 seconds)</p>
+                        <p style="margin-bottom: 15px; color: #666;">🎥 Recommended under 3 min at 720p — stays safely under GitHub's 100MB file limit</p>
                         <div class="video-controls">
                             <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
                                 <i class="fas fa-circle"></i> Start Recording
@@ -58,7 +58,7 @@
                     </div>
 
                     <div id="message" class="tab-content">
-                        <form class="message-form" onsubmit="submitAll(event)">
+                        <form class="message-form" onsubmit="submitMessage(event)">
                             <input type="text" id="userName" placeholder="Your name" required>
                             <textarea id="userMessage" placeholder="Write your birthday message..." required></textarea>
                             <button type="submit" class="btn btn-primary">

@@ -3,7 +3,7 @@
 // ╚══════════════════════════════════════════════════╝
 
 // ── CONFIG ──────────────────────────────────────────
-const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday-website/main/birthday-wishes/records.json';
+const RECORDS_URL  = 'https://raw.githubusercontent.com/wjlslta/birthday_data/main/birthday-wishes/records.json';
 const TARGET_DATE  = '2026-06-28T00:00:00';
 
 let cachedEntries = [];
