@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════
-   Master/main.css — Master page only
-   (surprise overlay styles are in surprise.css)
+   Master/main.css — Master page
    ═══════════════════════════════════════════════ */
 
 /* ── Configurable values ── */
@@ -341,4 +340,183 @@ header p {
         width: 100%;
         max-width: 350px;
     }
+}
+
+
+/* ═════════════════════════════════════════════════════
+   SURPRISE OVERLAY STYLES — scoped to #overlay only
+   ═════════════════════════════════════════════════════ */
+
+#overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    text-align: center;
+    padding: 2rem;
+}
+
+#overlay.hidden {
+    display: none;
+}
+
+#overlay h1 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    margin-bottom: 1rem;
+    animation: overlayPulse 2s ease-in-out infinite;
+}
+
+#overlay .subtitle {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    opacity: 0.8;
+    margin-bottom: 3rem;
+}
+
+#overlay .message {
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    margin-bottom: 2rem;
+    min-height: 3rem;
+    transition: opacity 0.3s;
+}
+
+#overlay .btn-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#overlay button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+}
+
+#overlay button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+#overlay button:active {
+    transform: translateY(0);
+}
+
+#overlay .btn-primary {
+    background: #e94560;
+    color: #fff;
+}
+
+#overlay .btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+#overlay .password-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+#overlay .password-form input {
+    padding: 0.8rem 1.2rem;
+    font-size: 1.1rem;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    text-align: center;
+    outline: none;
+    width: 280px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#overlay .password-form input:focus {
+    border-color: #e94560;
+}
+
+#overlay .password-form input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+#overlay .error-msg {
+    color: #ff6b6b;
+    font-size: 0.95rem;
+    min-height: 1.5rem;
+}
+
+/* ── Game area ── */
+#game-area {
+    position: relative;
+    width: 100vw;
+    height: 60vh;
+}
+
+#game-area .game-btn {
+    position: absolute;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    transition: left 0.3s ease, top 0.3s ease, opacity 0.3s;
+    white-space: nowrap;
+}
+
+/* ── Finale (full-screen messages) ── */
+#finale {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#finale .finale-text {
+    font-size: clamp(2rem, 8vw, 5rem);
+    color: #fff;
+    text-align: center;
+    padding: 2rem;
+    font-weight: 800;
+}
+
+/* ── Phase visibility ── */
+#overlay .phase {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+#overlay .phase.active {
+    display: flex;
+}
+
+/* ── Overlay-specific animations (prefixed to avoid conflicts) ── */
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes overlayFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes overlayPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
 }
