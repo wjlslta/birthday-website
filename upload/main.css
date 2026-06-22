@@ -106,9 +106,6 @@ body::before {
         background-position: calc(50% - 30px) calc(50% + 350px);
         background-repeat: inline-repeat;   /* Browser dependent fallback */
         
-        /* Strict modern control to prevent upward repetition */
-        background-repeat: no-repeat repeat; /* X-axis: no-repeat, Y-axis: repeat */
-        
         z-index: -1;
     }
 }
