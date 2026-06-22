@@ -29,6 +29,7 @@ let recordingTime    = 0;
 let currentFrame     = 'classic';
 let photoboothStream = null;
 let cachedEntries    = [];
+const mediaUrlCache = new Map();
 
 // ── Init ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
@@ -140,7 +141,7 @@ async function saveRecords(entries, sha) {
 }
 
 async function uploadFile(filename, base64Data) {
-    await githubPut(`${UPLOAD_PATH}/${filename}`, base64Data, `Add ${filename}`);
+    return githubPut(`${UPLOAD_PATH}/${filename}`, base64Data, `Add ${filename}`);
 }
 
 // ═══════════════════════════════════════════════════
@@ -432,11 +433,10 @@ function capturePhoto() {
     const canvas = document.getElementById('photoboothCanvas');
     const ctx = canvas.getContext('2d');
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.drawImage(video, 0, 0);
-    drawFrame(ctx, canvas.width, canvas.height);
+    if (!video.videoWidth || !video.videoHeight) {
+        alert('Camera is still loading. Wait a second, then try again.');
+        return;
+    }
 
     let countdown = 3;
     const countdownEl = document.getElementById('countdownTimer');
@@ -450,6 +450,12 @@ function capturePhoto() {
         } else {
             clearInterval(countdownInterval);
             countdownEl.classList.remove('active');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            drawFrame(ctx, canvas.width, canvas.height);
+
             const imageData = canvas.toDataURL('image/png');
             showPhotoboothPreview(imageData);
         }
@@ -543,17 +549,97 @@ function blobToBase64(blob) {
     });
 }
 
+function base64ToBytes(base64) {
+    const binary = atob(base64.replace(/\n/g, ''));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
+
+function detectMimeType(bytes, entry) {
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'image/png';
+    if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'image/gif';
+    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return 'image/webp';
+    if (entry.type === 'video') return 'video/webm';
+    if (entry.type === 'photobooth') return 'image/png';
+    return 'image/jpeg';
+}
+
+function getUploadExtension(fileOrBlob, type) {
+    if (type === 'photobooth') return 'png';
+    if (type === 'video') return 'webm';
+
+    const mimeToExt = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/gif': 'gif',
+        'image/webp': 'webp'
+    };
+
+    if (fileOrBlob.type && mimeToExt[fileOrBlob.type]) return mimeToExt[fileOrBlob.type];
+
+    if (fileOrBlob.name && fileOrBlob.name.includes('.')) {
+        const ext = fileOrBlob.name.split('.').pop().toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return ext === 'jpeg' ? 'jpg' : ext;
+    }
+
+    return 'jpg';
+}
+
+function getMediaCacheKey(entry) {
+    return entry.id || entry.filename || entry.url;
+}
+
+async function getMediaDisplayUrl(entry) {
+    if (!entry || entry.type === 'message') return '';
+    const cacheKey = getMediaCacheKey(entry);
+    if (mediaUrlCache.has(cacheKey)) return mediaUrlCache.get(cacheKey);
+
+    if (!entry.filename) return entry.url || '';
+
+    try {
+        const resp = await fetch(`${API_BASE}/${UPLOAD_PATH}/${entry.filename}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        const bytes = base64ToBytes(data.content);
+        if (bytes.length === 0) {
+            console.warn('Media file is empty:', entry.filename);
+            mediaUrlCache.set(cacheKey, '');
+            return '';
+        }
+        const blob = new Blob([bytes], { type: detectMimeType(bytes, entry) });
+        const objectUrl = URL.createObjectURL(blob);
+        mediaUrlCache.set(cacheKey, objectUrl);
+        return objectUrl;
+    } catch (e) {
+        console.warn('Worker media fetch failed, falling back to stored URL:', e);
+        return entry.url || '';
+    }
+}
+
 async function addEntry(fileOrBlob, type, name, message) {
     const { entries, sha } = await fetchRecords();
 
     const safeName = encodeURIComponent(
         name.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf\s]/g, '').substring(0, 20)
     );
-    const ext = type === 'photobooth' ? 'png' : type === 'photo' ? 'jpg' : 'webm';
+    const ext = getUploadExtension(fileOrBlob, type);
     const filename = `${type}_${safeName}_${Date.now()}.${ext}`;
 
+    if (fileOrBlob.size === 0) {
+        throw new Error('Selected file is empty. Please choose or capture it again.');
+    }
+
     const base64 = await blobToBase64(fileOrBlob);
-    await uploadFile(filename, base64);
+    if (!base64) {
+        throw new Error('Selected file could not be read. Please choose or capture it again.');
+    }
+
+    const uploaded = await uploadFile(filename, base64);
+    if (uploaded.content && uploaded.content.size === 0) {
+        throw new Error('GitHub saved an empty file. Please try uploading it again.');
+    }
 
     const entry = {
         id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2),
@@ -605,10 +691,11 @@ async function loadGallery() {
 
     section.style.display = 'block';
 
-    gallery.innerHTML = entries.map((entry, index) => {
+    const cards = await Promise.all(entries.map(async (entry, index) => {
         let mediaHtml = '';
         const safeName = escapeHtml(entry.name);
         const safeMessage = escapeHtml(entry.message || 'No message');
+        const displayUrl = await getMediaDisplayUrl(entry);
 
         if (entry.type === 'message') {
             mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B43 0%,#6b4f30 100%);border-radius:10px;">
@@ -617,12 +704,13 @@ async function loadGallery() {
                     <p style="color:#f5e6d3;">${safeName}</p>
                 </div>
             </div>`;
-        } else if (entry.type === 'photobooth') {
-            mediaHtml = `<img src="${entry.url}" style="width:100%;height:100%;object-fit:cover;" alt="photobooth" loading="lazy">`;
+        } else if (!displayUrl) {
+            mediaHtml = '<div class="media-error">image unavailable</div>';
+        } else if (entry.type === 'video') {
+            mediaHtml = `<video src="${displayUrl}" controls style="width:100%;height:100%;object-fit:cover;" loading="lazy"></video>`;
         } else {
-            const tag = entry.type === 'video' ? 'video' : 'img';
-            const controls = entry.type === 'video' ? 'controls' : '';
-            mediaHtml = `<${tag} src="${entry.url}" ${controls} style="width:100%;height:100%;object-fit:cover;" loading="lazy"></${tag}>`;
+            const altText = entry.type === 'photobooth' ? 'photobooth' : safeName;
+            mediaHtml = `<img src="${displayUrl}" style="width:100%;height:100%;object-fit:cover;" alt="${altText}" loading="lazy">`;
         }
 
         return `
@@ -637,17 +725,19 @@ async function loadGallery() {
                 </div>
             </div>
         `;
-    }).join('');
+    }));
+
+    gallery.innerHTML = cards.join('');
 }
 
 // ═══════════════════════════════════════════════════
 //  MODAL
 // ═══════════════════════════════════════════════════
 
-function openModal(index) {
+async function openModal(index) {
     const entry = cachedEntries[index];
     const safeName = escapeHtml(entry.name);
-    const safeMessage = escapeHtml(entry.message || 'No message provided');
+    const displayUrl = await getMediaDisplayUrl(entry);
 
     if (entry.type === 'message') {
         document.getElementById('modalMedia').innerHTML = `
@@ -656,10 +746,12 @@ function openModal(index) {
                 <p style="font-size:1.2rem;">${safeName}</p>
             </div>
         `;
-    } else if (entry.type === 'photobooth') {
-        document.getElementById('modalMedia').innerHTML = `<img src="${entry.url}" style="width:100%;border-radius:15px;" alt="photobooth">`;
+    } else if (!displayUrl) {
+        document.getElementById('modalMedia').innerHTML = '<div class="media-error">image unavailable</div>';
+    } else if (entry.type === 'video') {
+        document.getElementById('modalMedia').innerHTML = `<video src="${displayUrl}" controls style="width:100%;border-radius:15px;">`;
     } else {
-        document.getElementById('modalMedia').innerHTML = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;border-radius:15px;">`;
+        document.getElementById('modalMedia').innerHTML = `<img src="${displayUrl}" style="width:100%;border-radius:15px;" alt="${entry.type === 'photobooth' ? 'photobooth' : safeName}">`;
     }
 
     document.getElementById('modalName').textContent = entry.name;
