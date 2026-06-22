@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3d2438">
     <title>Janice's Birthday Gallery</title>
     <link rel="stylesheet" href="main.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -45,13 +46,19 @@
     <div class="finale-text" id="finale-text"></div>
   </div>
 
-    <div class="container">
-        <header>
-            <h1>Happy 19th Birthday to Janice 🤎</h1>
-            <p>Memories from everyone who loves you</p>
-            <div class="countdown" id="countdown">Loading...</div>
-        </header>
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HERO — fills one viewport, scrolls to gallery -->
+  <!-- ═══════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-inner">
+        <h1>Happy 19th Birthday to Janice 🤎</h1>
+        <p class="subtitle">Memories from everyone who loves you</p>
+        <div class="countdown" id="countdown">Loading...</div>
+    </div>
+    <div class="scroll-cue">Scroll</div>
+  </section>
 
+    <div class="container">
         <div class="divider">✦ ✦ ✦</div>
 
         <div class="master-content">
@@ -76,7 +83,7 @@
             <div class="modal-info">
                 <h3 id="modalName"></h3>
                 <p id="modalMessage"></p>
-                <small id="modalTime" style="color: #999;"></small>
+                <small id="modalTime" style="color: var(--color-text-muted);"></small>
                 <div class="modal-actions" id="modalActions"></div>
             </div>
         </div>

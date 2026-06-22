@@ -5,18 +5,18 @@
 
 // ── CONFIG ──────────────────────────────────────────
 const WORKER_URL    = 'https://birthdaydata.janicellchancl.workers.dev';
-const REPO_OWNER     = 'wjlslta';
-const REPO_NAME      = 'birthday_data';
-const UPLOAD_PATH    = 'birthday-wishes';
-const RECORDS_FILE   = 'birthday-wishes/records.json';
-const RAW_BASE       = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
-const API_BASE       = `${WORKER_URL}/${REPO_OWNER}/${REPO_NAME}/contents`;
-const TARGET_DATE    = '2026-06-28T00:00:00';
+const REPO_OWNER    = 'wjlslta';
+const REPO_NAME     = 'birthday_data';
+const UPLOAD_PATH   = 'birthday-wishes';
+const RECORDS_FILE  = 'birthday-wishes/records.json';
+const RAW_BASE      = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main`;
+const API_BASE      = `${WORKER_URL}/${REPO_OWNER}/${REPO_NAME}/contents`;
+const TARGET_DATE   = '2026-06-28T00:00:00';
 
 // ── Video recording config ──────────────────────────
 const VIDEO_MAX_DURATION = 180;              // seconds (3 min)
-const VIDEO_BITRATE      = 2500000;          // 2.5 Mbps — keeps 3-min video ~56MB (well under GitHub 100MB limit)
-const VIDEO_WIDTH        = 1280;             // 720p
+const VIDEO_BITRATE      = 2500000;          // 2.5 Mbps
+const VIDEO_WIDTH        = 1280;
 const VIDEO_HEIGHT       = 720;
 const VIDEO_FRAMERATE    = 30;
 
@@ -42,18 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
 //  UTF-8 ENCODING HELPERS
 // ═══════════════════════════════════════════════════
 
-// Safe Base64 encoding that handles Unicode characters properly
 function utf8ToBase64(str) {
-    // Encode as UTF-8 first, then convert to Base64
     const utf8Bytes = new TextEncoder().encode(str);
     let binary = '';
-    utf8Bytes.forEach(byte => {
-        binary += String.fromCharCode(byte);
-    });
+    utf8Bytes.forEach(byte => { binary += String.fromCharCode(byte); });
     return btoa(binary);
 }
 
-// Safe Base64 decoding that handles Unicode characters properly
 function base64ToUtf8(base64) {
     const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
@@ -72,8 +67,11 @@ function updateCountdown() {
     const now = new Date().getTime();
     const distance = targetDate - now;
 
+    const el = document.getElementById('countdown');
+    if (!el) return;
+
     if (distance < 0) {
-        document.getElementById('countdown').innerHTML = "🎉 It's Janice's birthday! 🎉";
+        el.innerHTML = "🎉 It's Janice's birthday! 🎉";
         return;
     }
 
@@ -82,7 +80,7 @@ function updateCountdown() {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s until the celebration!`;
+    el.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s until the celebration!`;
 }
 
 // ═══════════════════════════════════════════════════
@@ -97,7 +95,7 @@ function switchTab(tabName) {
 }
 
 // ═══════════════════════════════════════════════════
-//  GITHUB API HELPERS
+//  GITHUB API HELPERS (via Worker)
 // ═══════════════════════════════════════════════════
 
 async function githubGet(path) {
@@ -107,11 +105,7 @@ async function githubGet(path) {
 }
 
 async function githubPut(path, contentBase64, message, sha) {
-    const body = {
-        message: message,
-        content: contentBase64,
-        branch: 'main'
-    };
+    const body = { message: message, content: contentBase64, branch: 'main' };
     if (sha) body.sha = sha;
 
     const resp = await fetch(`${API_BASE}/${path}`, {
@@ -129,7 +123,6 @@ async function githubPut(path, contentBase64, message, sha) {
 async function fetchRecords() {
     try {
         const data = await githubGet(RECORDS_FILE);
-        // Use base64ToUtf8 for proper Unicode handling
         const decoded = base64ToUtf8(data.content.replace(/\n/g, ''));
         const parsed = JSON.parse(decoded);
         return { sha: data.sha, entries: parsed.entries || [] };
@@ -141,7 +134,6 @@ async function fetchRecords() {
 
 async function saveRecords(entries, sha) {
     const json = JSON.stringify({ entries: entries }, null, 2);
-    // Use utf8ToBase64 to properly encode Chinese characters
     const base64 = utf8ToBase64(json);
     const result = await githubPut(RECORDS_FILE, base64, 'Update birthday wishes records', sha);
     return result.content.sha;
@@ -155,25 +147,20 @@ async function uploadFile(filename, base64Data) {
 //  UPLOAD FORM (injected into preview areas)
 // ═══════════════════════════════════════════════════
 
-// Inject name+message form into a preview container.
-// callback(name, message) is called on submit.
 function injectUploadForm(containerId, onSubmit) {
     const container = document.getElementById(containerId);
     const formId = containerId + '-form';
 
-    // Don't double-inject
     if (document.getElementById(formId)) return;
 
     const formHtml = `
-        <div id="${formId}" class="upload-form" style="margin-top:15px;display:flex;flex-direction:column;gap:10px;">
-            <input type="text" id="${formId}-name" placeholder="Your name *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:var(--accent-font);font-size:0.95rem;background:rgba(255,255,255,0.8);">
-            <textarea id="${formId}-message" placeholder="Write a birthday message... *" required
-                style="padding:10px;border:2px solid #D4A574;border-radius:8px;font-family:var(--accent-font);font-size:0.95rem;background:rgba(255,255,255,0.8);min-height:60px;resize:vertical;"></textarea>
+        <div id="${formId}" class="upload-form">
+            <input type="text" id="${formId}-name" placeholder="Your name *" required>
+            <textarea id="${formId}-message" placeholder="Write a birthday message... *" required></textarea>
             <button class="btn btn-primary" id="${formId}-submit">
                 <i class="fas fa-upload"></i> Upload
             </button>
-            <p id="${formId}-error" style="color:#d32f2f;font-size:0.85rem;display:none;"></p>
+            <p id="${formId}-error" style="color:#c0392b;font-size:0.85rem;display:none;"></p>
         </div>
     `;
     container.insertAdjacentHTML('beforeend', formHtml);
@@ -199,6 +186,7 @@ function injectUploadForm(containerId, onSubmit) {
 
 function setupDropZone() {
     const dropZone = document.getElementById('dropZone');
+    if (!dropZone) return;
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('dragover');
@@ -223,7 +211,7 @@ function handlePhotoFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         document.getElementById('photoPreview').innerHTML = `
-            <img src="${e.target.result}" alt="preview" style="max-width:100%;border-radius:10px;">
+            <img src="${e.target.result}" alt="preview">
         `;
         injectUploadForm('photoPreview', submitPhoto);
     };
@@ -293,12 +281,11 @@ async function startRecording() {
             document.querySelector('#videoPreviewContainer video').src = videoUrl;
             isRecording = false;
 
-            // Inject name+message form for video upload
             injectUploadForm('videoPreviewContainer', submitVideo);
         };
 
         videoRecorder = mediaRecorder;
-        mediaRecorder.start(1000); // collect data every second
+        mediaRecorder.start(1000);
 
         document.getElementById('startRecordBtn').style.display = 'none';
         document.getElementById('stopRecordBtn').style.display = 'flex';
@@ -401,7 +388,6 @@ async function addMessageEntry(name, message) {
     entries.push(entry);
     await saveRecords(entries, sha);
 
-    // Also save to localStorage
     const local = getLocalUploads();
     local.push(entry);
     saveLocalUploads(local);
@@ -478,10 +464,10 @@ function drawFrame(ctx, width, height) {
             ctx.strokeRect(10, 10, width - 20, height - 20);
             break;
         case 'hearts':
-            ctx.strokeStyle = '#8B6B63';
+            ctx.strokeStyle = '#8B6B43';
             ctx.strokeRect(10, 10, width - 20, height - 20);
             ctx.font = 'bold 40px Arial';
-            ctx.fillStyle = '#8B6B63';
+            ctx.fillStyle = '#8B6B43';
             ctx.fillText('🤎', 20, 50);
             ctx.fillText('🤎', width - 70, 50);
             ctx.fillText('🤎', 20, height - 20);
@@ -494,7 +480,7 @@ function showPhotoboothPreview(imageData) {
     const preview = document.getElementById('photoboothPreview');
     preview.innerHTML = `
         <img src="${imageData}" alt="photobooth" style="max-width:100%;border-radius:10px;">
-        <div class="photobooth-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;">
+        <div class="photobooth-actions">
             <button class="btn btn-secondary" onclick="downloadPhotoboothPhoto('${imageData}')">
                 <i class="fas fa-download"></i> Download
             </button>
@@ -503,7 +489,6 @@ function showPhotoboothPreview(imageData) {
             </button>
         </div>
     `;
-    // Inject name+message form below the preview
     injectUploadForm('photoboothPreview', (name, message) => {
         submitPhotobooth(imageData, name, message);
     });
@@ -532,20 +517,17 @@ async function submitPhotobooth(imageData, name, message) {
 }
 
 // ═══════════════════════════════════════════════════
-//  SHARED: blob→base64 + add entry to GitHub + localStorage
+//  LOCAL STORAGE HELPERS
 // ═══════════════════════════════════════════════════
 
-// ── Local storage helpers ────────────────────────────
 function getLocalUploads() {
-    try { 
+    try {
         const stored = localStorage.getItem('bd_myUploads');
-        return stored ? JSON.parse(stored) : []; 
-    }
-    catch(e) { return []; }
+        return stored ? JSON.parse(stored) : [];
+    } catch(e) { return []; }
 }
 
 function saveLocalUploads(entries) {
-    // JSON.stringify handles Unicode correctly
     localStorage.setItem('bd_myUploads', JSON.stringify(entries));
 }
 
@@ -553,7 +535,6 @@ function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-            // Extract just the base64 data (remove data:xxx;base64, prefix)
             const base64 = reader.result.split(',')[1];
             resolve(base64);
         };
@@ -565,7 +546,6 @@ function blobToBase64(blob) {
 async function addEntry(fileOrBlob, type, name, message) {
     const { entries, sha } = await fetchRecords();
 
-    // Allow Chinese characters in filename by using encodeURIComponent
     const safeName = encodeURIComponent(
         name.replace(/[^\w\u4e00-\u9fff\u3400-\u4dbf\s]/g, '').substring(0, 20)
     );
@@ -588,7 +568,6 @@ async function addEntry(fileOrBlob, type, name, message) {
     entries.push(entry);
     await saveRecords(entries, sha);
 
-    // Also save to localStorage so upload page only shows your own
     const local = getLocalUploads();
     local.push(entry);
     saveLocalUploads(local);
@@ -599,7 +578,18 @@ async function addEntry(fileOrBlob, type, name, message) {
 }
 
 // ═══════════════════════════════════════════════════
-//  GALLERY
+//  HTML ESCAPE HELPER
+// ═══════════════════════════════════════════════════
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ═══════════════════════════════════════════════════
+//  GALLERY (stacks vertically, only shows local uploads)
 // ═══════════════════════════════════════════════════
 
 async function loadGallery() {
@@ -610,53 +600,44 @@ async function loadGallery() {
 
     if (entries.length === 0) {
         section.style.display = 'none';
-        document.querySelector('.main-content').style.gridTemplateColumns = '1fr';
         return;
     }
 
     section.style.display = 'block';
-    document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
-    
+
     gallery.innerHTML = entries.map((entry, index) => {
-            let mediaHtml = '';
-            // Escape HTML entities to prevent XSS but allow Chinese characters
-            const safeName = escapeHtml(entry.name);
-            const safeMessage = escapeHtml(entry.message || 'No message');
-            
-            if (entry.type === 'message') {
-                mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);border-radius:10px;">
-                    <div>
-                        <i class="fas fa-comment" style="font-size:3rem;margin-bottom:10px;color:#f5e6d3;"></i>
-                        <p style="color:#f5e6d3;">${safeName}</p>
-                    </div>
-                </div>`;
-            } else if (entry.type === 'photobooth') {
-                mediaHtml = `<img src="${entry.url}" style="width:100%;height:100%;object-fit:cover;" alt="photobooth" loading="lazy">`;
-            } else {
-                mediaHtml = `<${entry.type === 'video' ? 'video' : 'img'} src="${entry.url}" ${entry.type === 'video' ? 'controls' : ''} style="width:100%;height:100%;object-fit:cover;" loading="lazy">`;
-            }
+        let mediaHtml = '';
+        const safeName = escapeHtml(entry.name);
+        const safeMessage = escapeHtml(entry.message || 'No message');
 
-            return `
-                <div class="gallery-item" onclick="openModal(${index})">
-                    <button class="gallery-item-delete" onclick="event.stopPropagation();deleteEntry(${index})" title="Delete">✕</button>
-                    <div class="gallery-item-media">${mediaHtml}</div>
-                    <div class="gallery-item-content">
-                        <div class="gallery-item-name">${safeName}</div>
-                        <div class="gallery-item-message">${safeMessage}</div>
-                        <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : escapeHtml(entry.type)}</div>
-                        <div class="gallery-item-time">${new Date(entry.timestamp).toLocaleString()}</div>
-                    </div>
+        if (entry.type === 'message') {
+            mediaHtml = `<div style="width:100%;padding:20px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#8B6B43 0%,#6b4f30 100%);border-radius:10px;">
+                <div>
+                    <i class="fas fa-comment" style="font-size:3rem;margin-bottom:10px;color:#f5e6d3;"></i>
+                    <p style="color:#f5e6d3;">${safeName}</p>
                 </div>
-            `;
-        }).join('');
-}
+            </div>`;
+        } else if (entry.type === 'photobooth') {
+            mediaHtml = `<img src="${entry.url}" style="width:100%;height:100%;object-fit:cover;" alt="photobooth" loading="lazy">`;
+        } else {
+            const tag = entry.type === 'video' ? 'video' : 'img';
+            const controls = entry.type === 'video' ? 'controls' : '';
+            mediaHtml = `<${tag} src="${entry.url}" ${controls} style="width:100%;height:100%;object-fit:cover;" loading="lazy"></${tag}>`;
+        }
 
-// Helper to escape HTML special characters while preserving Unicode/Chinese
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+        return `
+            <div class="gallery-item" onclick="openModal(${index})">
+                <button class="gallery-item-delete" onclick="event.stopPropagation();deleteEntry(${index})" title="Delete">✕</button>
+                <div class="gallery-item-media">${mediaHtml}</div>
+                <div class="gallery-item-content">
+                    <div class="gallery-item-name">${safeName}</div>
+                    <div class="gallery-item-message">${safeMessage}</div>
+                    <div class="gallery-item-type">${entry.type === 'photobooth' ? '📷 Photobooth' : escapeHtml(entry.type)}</div>
+                    <div class="gallery-item-time">${new Date(entry.timestamp).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ═══════════════════════════════════════════════════
@@ -670,7 +651,7 @@ function openModal(index) {
 
     if (entry.type === 'message') {
         document.getElementById('modalMedia').innerHTML = `
-            <div style="background:linear-gradient(135deg,#8B6B63 0%,#A67B7B 100%);color:#f5e6d3;padding:60px 20px;border-radius:15px;text-align:center;">
+            <div style="background:linear-gradient(135deg,#8B6B43 0%,#6b4f30 100%);color:#f5e6d3;padding:60px 20px;border-radius:15px;text-align:center;">
                 <i class="fas fa-comment" style="font-size:4rem;margin-bottom:20px;"></i>
                 <p style="font-size:1.2rem;">${safeName}</p>
             </div>
@@ -688,6 +669,11 @@ function openModal(index) {
     document.getElementById('modal').classList.add('active');
 }
 
+function closeModal(event) {
+    if (event && event.target.id !== 'modal') return;
+    document.getElementById('modal').classList.remove('active');
+}
+
 // ═══════════════════════════════════════════════════
 //  DELETE (confirm once, no password)
 // ═══════════════════════════════════════════════════
@@ -695,7 +681,6 @@ function openModal(index) {
 async function deleteEntry(index) {
     if (!confirm('Delete this entry?')) return;
     try {
-        // Remove from GitHub
         const { entries, sha } = await fetchRecords();
         const entry = cachedEntries[index];
         const githubIndex = entries.findIndex(e => e.id === entry.id);
@@ -704,7 +689,6 @@ async function deleteEntry(index) {
             await saveRecords(entries, sha);
         }
 
-        // Remove from localStorage
         const local = getLocalUploads();
         local.splice(index, 1);
         saveLocalUploads(local);
@@ -717,13 +701,8 @@ async function deleteEntry(index) {
 }
 
 // ═══════════════════════════════════════════════════
-//  MODALS / SUCCESS / KEYBOARD
+//  SUCCESS / THANK YOU / KEYBOARD
 // ═══════════════════════════════════════════════════
-
-function closeModal(event) {
-    if (event && event.target.id !== 'modal') return;
-    document.getElementById('modal').classList.remove('active');
-}
 
 function showSuccess() {
     const msg = document.getElementById('successMessage');

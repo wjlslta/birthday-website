@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3d2438">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Janice's Birthday Website</title>
     <link rel="stylesheet" href="main.css">
@@ -23,12 +24,19 @@
 </head>
 <body>
 
-    <div class="container">
-        <header>
+    <!-- ═════════════════════════════════════════════
+         HERO — fills one viewport, scrolls to upload
+         ═════════════════════════════════════════════ -->
+    <section class="hero">
+        <div class="hero-inner">
             <h1>Happy 19th Birthday to Janice 🤎</h1>
-            <p>Share our memories with me</p>
+            <p class="subtitle">Share our memories with me</p>
             <div class="countdown" id="countdown">Loading...</div>
-        </header>
+        </div>
+        <div class="scroll-cue">Scroll</div>
+    </section>
+
+    <div class="container">
 
         <div class="divider">✦ ✦ ✦</div>
 
@@ -49,7 +57,7 @@
                     <div id="photo" class="tab-content active">
                         <div class="drop-zone" id="dropZone" onclick="document.getElementById('photoInput').click()">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <p><strong>Click to upload or drag & drop</strong></p>
+                            <p><strong>Click to upload or drag &amp; drop</strong></p>
                             <small>PNG, JPG up to 5MB</small>
                         </div>
                         <input type="file" id="photoInput" accept="image/*" style="display: none;">
@@ -57,7 +65,7 @@
                     </div>
 
                     <div id="video" class="tab-content">
-                        <p style="margin-bottom: 15px; color: #666;">🎥 Record a video for Janice!! </p>
+                        <p style="margin-bottom: 15px; color: var(--color-text-mid);">🎥 Record a video for Janice!! </p>
                         <div class="video-controls">
                             <button class="btn btn-success" id="startRecordBtn" onclick="startRecording()">
                                 <i class="fas fa-circle"></i> Start Recording
@@ -83,7 +91,7 @@
                     <div id="photobooth" class="tab-content">
                         <div class="photobooth-container">
                             <div style="text-align:center;">
-                                <label style="color: #8B6B63; font-weight: 600; display:block; margin-bottom:8px;">Choose Frame:</label>
+                                <label style="color: var(--color-text-deep); font-weight: 600; display:block; margin-bottom:8px;">Choose Frame:</label>
                                 <div class="frame-selector">
                                     <button class="frame-option active" onclick="selectFrame('classic')">Classic</button>
                                     <button class="frame-option" onclick="selectFrame('hearts')">Hearts 🤎</button>
@@ -134,7 +142,7 @@
             <div class="modal-info">
                 <h3 id="modalName"></h3>
                 <p id="modalMessage"></p>
-                <small id="modalTime" style="color: #999;"></small>
+                <small id="modalTime" style="color: var(--color-text-muted);"></small>
             </div>
         </div>
     </div>
