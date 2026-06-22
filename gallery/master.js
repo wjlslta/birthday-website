@@ -235,7 +235,7 @@ document.addEventListener('keydown', (e) => {
 
 // ── SURPRISE CONFIG ─────────────────────────────────
 const SURPRISE_CONFIG = {
-    TARGET_DATE: '2026-06-28T00:00:00',
+    TARGET_DATE: '2026-06-18T00:00:00',
 
     ORIGINAL_URL: 'https://wjlslta.github.io/birthday-website/',
 

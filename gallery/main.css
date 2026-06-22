@@ -73,20 +73,26 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Background image — fixed, full cover */
+/* Background image — fixed, pushed ABOVE text (negative offset) */
 body::before {
     content: '';
     position: fixed;
-    inset: 0;
+    top: -5.4rem;       /* NEGATIVE — image starts above viewport top */
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: url('background.png') center / cover no-repeat;
     z-index: -2;
 }
 
-/* Subtle dark veil for text legibility */
+/* Subtle dark veil — aligned with image (negative offset) */
 body::after {
     content: '';
     position: fixed;
-    inset: 0;
+    top: -5.4rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: linear-gradient(180deg,
         rgba(61, 36, 56, 0.18) 0%,
         rgba(61, 36, 56, 0.10) 40%,
