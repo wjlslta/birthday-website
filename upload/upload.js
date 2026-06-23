@@ -596,8 +596,16 @@ async function getMediaDisplayUrl(entry) {
     const cacheKey = getMediaCacheKey(entry);
     if (mediaUrlCache.has(cacheKey)) return mediaUrlCache.get(cacheKey);
 
+    // If an explicit raw URL is present, prefer it first.
+    // Some workers or API routes may return unexpected payloads for certain images (PNG),
+    // so using the raw GitHub URL is a reliable fallback we can prefer.
+    if (entry.url) {
+        mediaUrlCache.set(cacheKey, entry.url);
+        return entry.url;
+    }
+
     if (!entry.filename) {
-        const fallback = entry.url || '';
+        const fallback = '';
         mediaUrlCache.set(cacheKey, fallback);
         return fallback;
     }

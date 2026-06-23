@@ -133,8 +133,14 @@ async function getMediaDisplayUrl(entry) {
     const cacheKey = getMediaCacheKey(entry);
     if (mediaUrlCache.has(cacheKey)) return mediaUrlCache.get(cacheKey);
 
+    // Prefer explicit raw URL when available — avoids worker payload issues
+    if (entry.url) {
+        mediaUrlCache.set(cacheKey, entry.url);
+        return entry.url;
+    }
+
     if (!entry.filename) {
-        const fallback = entry.url || '';
+        const fallback = '';
         mediaUrlCache.set(cacheKey, fallback);
         return fallback;
     }
