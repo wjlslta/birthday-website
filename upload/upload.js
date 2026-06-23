@@ -596,25 +596,29 @@ async function getMediaDisplayUrl(entry) {
     const cacheKey = getMediaCacheKey(entry);
     if (mediaUrlCache.has(cacheKey)) return mediaUrlCache.get(cacheKey);
 
-    if (!entry.filename) return entry.url || '';
+    if (!entry.filename) {
+        const fallback = entry.url || '';
+        mediaUrlCache.set(cacheKey, fallback);
+        return fallback;
+    }
 
     try {
         const resp = await fetch(`${API_BASE}/${UPLOAD_PATH}/${entry.filename}`);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-        const bytes = base64ToBytes(data.content);
+        const bytes = base64ToBytes(data.content || '');
         if (bytes.length === 0) {
-            console.warn('Media file is empty:', entry.filename);
-            mediaUrlCache.set(cacheKey, '');
-            return '';
+            throw new Error('Empty media content from worker');
         }
         const blob = new Blob([bytes], { type: detectMimeType(bytes, entry) });
         const objectUrl = URL.createObjectURL(blob);
         mediaUrlCache.set(cacheKey, objectUrl);
         return objectUrl;
     } catch (e) {
-        console.warn('Worker media fetch failed, falling back to stored URL:', e);
-        return entry.url || '';
+        console.warn('Worker media fetch failed, falling back to raw URL:', e);
+        const fallback = entry.url || `${RAW_BASE}/${UPLOAD_PATH}/${entry.filename}`;
+        mediaUrlCache.set(cacheKey, fallback);
+        return fallback;
     }
 }
 
