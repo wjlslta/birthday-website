@@ -71,7 +71,7 @@ body {
             rgba(61, 36, 56, 0.10) 40%,
             rgba(61, 36, 56, 0.30) 100%),
         url('background.png');
-    background-position: center, calc(50% - 10px) calc(30% + 20vh);
+    background-position: center, calc(50% - 10px) calc(30% + 17vh);
     background-size: 100% 100%, 100% auto;
     background-repeat: repeat;
     background-attachment: fixed;
