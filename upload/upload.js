@@ -693,15 +693,18 @@ function escapeHtml(text) {
 async function loadGallery() {
     const gallery = document.getElementById('gallery');
     const section = document.getElementById('gallerySection');
+    const mainContent = document.querySelector('.main-content');
     const entries = getLocalUploads();
     cachedEntries = entries;
 
     if (entries.length === 0) {
         section.style.display = 'none';
+        if (mainContent) mainContent.classList.add('gallery-hidden');
         return;
     }
 
     section.style.display = 'block';
+    if (mainContent) mainContent.classList.remove('gallery-hidden');
 
     const cards = await Promise.all(entries.map(async (entry, index) => {
         let mediaHtml = '';
