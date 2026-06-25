@@ -78,35 +78,14 @@ body {
             rgba(61, 36, 56, 0.10) 40%,
             rgba(61, 36, 56, 0.30) 100%),
         url('background.png');
-    background-position: center, calc(50% - 10px) clamp(30vh,30vh,35vh);
+    background-position: center, calc(50% - 10px) calc(30% + 20vh);
     background-size: 100% 100%, 100% auto;
-    background-repeat: repeat-x, repeat-y;
+    background-repeat: repeat;
     background-attachment: fixed;
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-@media (min-width: 1000px) {
-body {
-    font-family: var(--font-body);
-    color: var(--color-text-deep);
-    background-color: var(--color-bg-tint);
-    background-image:
-        linear-gradient(180deg,
-            rgba(61, 36, 56, 0.18) 0%,
-            rgba(61, 36, 56, 0.10) 40%,
-            rgba(61, 36, 56, 0.30) 100%),
-        url('background.png');
-    background-position: center, calc(50% - 10px) clamp(10vh,20vh,40vh) ;
-    background-size: 100% 100%, 100% auto;
-    background-repeat: repeat-x, repeat-y;
-    background-attachment: fixed;
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
 }
 
 /* Chinese-capable inputs */
