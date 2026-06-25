@@ -80,8 +80,8 @@ body {
         url('background.png');
     background-position: top center, top center;
     background-size: 100% 100%, 125% auto;
-    background-repeat: repeat-y, repeat-y;
-    background-attachment: scroll, scroll;
+    background-repeat: repeat-x, repeat-y;
+    background-attachment: fixed;
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
