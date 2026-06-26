@@ -377,12 +377,6 @@ input::placeholder, textarea::placeholder {
 }
 .btn-success:hover { background: var(--color-text-mid); }
 
-.btn-sm {
-    padding: var(--sp-2) var(--sp-3);
-    font-size: 0.85rem;
-    min-height: 36px;
-}
-
 /* ── Media elements ─────────────────────────────── */
 video, canvas {
     width: 100%;

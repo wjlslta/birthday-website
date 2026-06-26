@@ -99,13 +99,6 @@ body {
 }
 
 
-/* Resets default browser spacing for all elements */
-* {
-    margin: 0;              /* Removes all outside spacing */
-    padding: 0;             /* Removes all inside spacing */
-    box-sizing: border-box; /* Makes width/height include padding and border in calculations */
-}
-
 /* Styles for both html and body elements */
 body, html {
     height: 100%;  /* Makes body/html take full browser window height */
@@ -144,13 +137,6 @@ body, html {
     margin: 1rem
 }
 
-/* Styles for the heading inside content */
-.content h1 {
-    font-size: 2.5rem;          /* Sets text size to 2.5 times root element size */
-    margin-bottom: 2rem;        /* Adds space below the heading */
-    font-family: Arial, sans-serif; /* Sets font to Arial, falls back to sans-serif */
-}
-
 /* Styles for the button container */
 .button-container {
     display: flex;           /* Enables flexbox for button layout */
@@ -170,11 +156,11 @@ body, html {
 }
 
 /* Base styles for all buttons */
-.yesbtn {
+.btn {
     padding: 5px 20px;          /* Adds 12px top/bottom, 30px left/right spacing inside button */
     font-size: 2rem;           /* Sets button text size */
     border: 2px solid var(--suprise-button-primary);     /* Creates white border around button */
-    background: transparent;     /* Makes button background see-through */
+    background: var(--suprise-background);     /* Makes button background see-through */
     color: var(--suprise-button-primary);                /* Sets button text color to white */
     cursor: pointer;             /* Changes mouse cursor to hand when hovering */
     border-radius: 5px;          /* Rounds the corners of button */
@@ -183,22 +169,11 @@ body, html {
 }
 
 /* Styles for button hover state */
-.yesbtn:hover {
-    background: transparent;  /* Changes background to white when mouse hovers */
-    color: var(--suprise-button-primary);       /* Changes text color to black when mouse hovers */
+.btn:hover {
+    background: var(--suprise-button-primary);  /* Changes background to white when mouse hovers */
+    color: var(--suprise-background);       /* Changes text color to black when mouse hovers */
 }
 
-/* Additional styles for primary button */
-.yesbtn-primary {
-    background: transparent;  /* Keeps the button transparent */
-    color: var(--suprise-button-primary); /* Keeps the label visible */
-}
-
-/* Hover state for primary button */
-.yesbtn-primary:hover {
-    background: transparent;  /* Makes background transparent when hovering */
-    color: var(--suprise-button-primary);             /* Changes text to white when hovering */
-}
 
 .nobtn {
     padding: 5px 20px;          /* Adds 12px top/bottom, 30px left/right spacing inside button */

@@ -20,7 +20,6 @@ let dialogueIndex = 0;
 document.addEventListener('DOMContentLoaded', function() {
     updateCountdown();
     setInterval(updateCountdown, 1000);
-    bindOverlayButtons();
     birthdaySuprise();
     loadGallery();
     initLock();
@@ -414,15 +413,12 @@ const dialogueScript = [
   [0, 600, "You just think it's FUNNY huh?!!?", "Yes", "No"],
   [0, 600, "W41T --- WH4T5 H4PP3N1NG??", "Yes", "No"],
   [0, 600, "TH15 1SNT M3??!", "Yes", "No"],
-
   [0, 400, "Sorry", "Continue", null],
   [0, 400, "Page lagged for a sec...", "Continue", null],
   [2000, 500, "Lemme fix", "Continue", null],
   [500, 1500, "Fix.....", "Continue", null],
-
   [0, 600, "Are you happy now??!", "Yes", "No"],
   [0, 600, "You broke the website...", "Yes", "No"],
-
   [0, 600, "You made me angry", "Yes", "No"],
   [0, 600, "And I don't wanna be angry at you", "Yes", "No"],
   [0, 600, "Click no please...", "Yes", "No"],
@@ -446,11 +442,9 @@ const dialogueScript = [
   [0, 600, "And I've never thought about this being real...", "Yes", "No"],
   [0, 600, "🌩️🌩️🌩️", "Continue", null],
   [800, 1000, "Happy birthday!!!", null, null], // path end card
-
   [0, 600, "Wait hold on... what happened", null, null],
   [0, 600, "Lemme check my logs real quick...", null, null],
   [1200, 800, ".....", null, null],
-
   [0, 700, "Wait WHAT", null, null],
   [0, 700, "You said yes??!", null, null],
   [0, 700, "I was joking", null, null],
@@ -467,33 +461,21 @@ function showOverlay() {
     overlay.classList.add('visible');
 }
 
-function bindOverlayButtons() {
-    const yesbtn = document.getElementById('yesbtn');
-    const nobtn = document.getElementById('nobtn');
-    if (!yesbtn || !nobtn) return;
-
-    yesbtn.addEventListener('click', () => {
-        dialogueIndex = Math.min(dialogueIndex + 1, dialogueScript.length - 1);
-        birthdaySuprise();
-    });
-
-    nobtn.addEventListener('click', () => {
-        dialogueIndex = Math.min(dialogueIndex + 1, dialogueScript.length - 1);
-        birthdaySuprise();
-    });
-}
-
 async function birthdaySuprise() {
+    console.log("birthdaySuprise started");
     showOverlay();
     const entry = dialogueScript[dialogueIndex] || dialogueScript[0];
     await updateText(entry[0], entry[1], entry[2]);
-    updateButtons(entry[3], entry[4]);
+    await new Promise (resolve => {
+        yesbtn.addEventListener('click', () => {
+        updateButtons(entry[3], entry[4])
+        dialogueIndex++;
+        resolve;
+    })})}
 
 
-
-}
-
-async function updateText(delay,reveal,text) {
+async function updateText(delay, reveal, text) {
+    console.log("updateText start");
     const message = document.getElementById("bdaymessage");
     message.textContent = "";
 
@@ -505,9 +487,11 @@ async function updateText(delay,reveal,text) {
         message.textContent += text.charAt(letter);
         await new Promise (resolve => setTimeout(resolve, letterDelay));
     }
+    console.log("updateText Finished");
 }
 
 function updateButtons(ybtn, nbtn) {
+    console.log("updateButtons Started");
     const yesbtn = document.getElementById("yesbtn");
     const nobtn = document.getElementById("nobtn");
     if (!yesbtn || !nobtn) return;
@@ -526,4 +510,5 @@ function updateButtons(ybtn, nbtn) {
         return y;
     })()}px`;
     nobtn.style.position = 'relative';
+    console.log("updateButtons Finished");
 }
