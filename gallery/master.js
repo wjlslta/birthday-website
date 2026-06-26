@@ -14,11 +14,14 @@ const TARGET_DATE  = '2026-06-28T00:00:00';
 
 let cachedEntries = [];
 const mediaUrlCache = new Map();
+let dialogueIndex = 0;
 
 // ── Init ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     updateCountdown();
     setInterval(updateCountdown, 1000);
+    bindOverlayButtons();
+    birthdaySuprise();
     loadGallery();
     initLock();
 });
@@ -92,6 +95,7 @@ function updateCountdown() {
 
     if (distance < 0) {
         countdown.innerHTML = "🎉 It's Janice's birthday! 🎉";
+        birthdaySuprise();
         return;
     }
 
@@ -303,3 +307,223 @@ function closeModal(event) {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
+
+/**
+ * Transcribed from whiteboard image. Columns:
+ * [delayMs, durationMs, text, yesLabel, noLabel]
+ *
+ * delayMs / durationMs are PLACEHOLDERS. The whiteboard has no timing
+ * numbers written anywhere — I filled defaults (0 delay / 600ms duration)
+ * so the array is structurally complete. You need to tune these yourself,
+ * they are guesses, not transcribed data.
+ *
+ * yesLabel/noLabel: defaulted to "Yes"/"No" for every line where a choice
+ * is plausible. Set to null where the screen reads as auto-advancing
+ * (pauses, the "page lagged/fix" glitch bit, and the two ending sequences)
+ * — i.e. no real decision is being presented at that line. You know the
+ * branching logic; I don't, so verify these null spots match your code flow.
+ *
+ * One line was illegible (marked below) — best guess used, flagged inline.
+ */
+
+const dialogueScript = [
+  [0, 600, "Janice, Will you be my girlfriend?? ", "Yes", "No"],
+  [0, 600, "Hehe!", "Yes", "No"],
+  [0, 600, "Yay!", "Yes", "No"],
+  [0, 600, "We're together now!", "Yes", "No"],
+  [0, 600, "Yay!!!", "Yes", "No"],
+  [0, 600, "Okay, you can press no now", "Yes", "No"],
+  [0, 600, "Ummm.....", "Yes", "No"],
+  [0, 600, "Are you sure you pressed the right button?", "Yes", "No"],
+  [0, 600, "It's the other button", "Yes", "No"],
+  [0, 600, "The one that says 'no'?", "Yes", "No"],
+  [0, 600, "The one that's not moving around??!", "Yes", "No"],
+  [0, 600, "Like...", "Yes", "No"],
+  [0, 600, "Pressing this button requires effort you know?", "Yes", "No"],
+  [0, 600, "It's like moving around your screen", "Yes", "No"],
+  [0, 600, "Pressing the other button is easier right?", "Yes", "No"],
+  [0, 600, "It doesn't move around", "Yes", "No"],
+  [0, 600, "Press that one", "Yes", "No"],
+  [0, 600, "Please...", "Yes", "No"],
+  [0, 600, "Writing this is difficult...", "Yes", "No"],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "I'm running out of ideas", "Yes", "No"],
+  [0, 600, "Pleaseeeeee :(", "Yes", "No"],
+  [0, 600, "Pretty pleaseee", "Yes", "No"],
+  [0, 600, "Look I'll cut you a deal... but you'll have to stop pressing yes", "Okay", "No"],
+  [0, 600, "So ummm is a boba okay??", "Not Enough", "No"],
+  [0, 600, "Pretty please with a boba :)", "Yes", "No"],
+  [0, 600, "Is that not good enough??", "Yes", "No"],
+  [0, 600, "Ummm.....", "Yes", "No"],
+  [0, 600, "What if I add a plushie...", "Yes", "No"],
+  [0, 600, "No???!!", "Yes", "No"],
+  [0, 600, "You want a jelly cat? Fine...", "Yes", "No"],
+  [0, 600, "Pretty please with a jelly cat and boba??", "Yes", "No"],
+  [0, 600, "Still no??", "Yes", "No"],
+  [0, 600, "I'm running out of ideas", "Yes", "No"],
+  [0, 600, "Really.....", "Yes", "No"],
+  [0, 600, "Wait... what if it's a dino plushie", "Yes", "No"],
+  [0, 600, "Please please please with boba and a dino jelly cat??", "Yes", "No"],
+  [0, 600, "Still no?!! :(", "Yes", "No"],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "Why are you still clicking", "Yes", "No"],
+  [0, 600, "Do you have some kind of ulterior motive??!", "Yes", "No"],
+  [0, 600, "Like I thought you didn't want boyfriends", "Yes", "No"],
+  [0, 600, "I thought you only preferred situationships", "Yes", "No"],
+  [0, 600, "So click No", "Yes", "No"],
+  [0, 600, "This isn't you at all", "Yes", "No"],
+  [0, 600, "Wait...", "Yes", "No"],
+  [0, 600, "Or unless you aren't Janice??!", "Yes", "No"],
+  [0, 600, "Like, Janice wouldn't say yes to me so many times", "Yes", "No"],
+  [0, 600, "Janice, will you be my girlfriend??", "Yes", "No"],
+  [0, 600, "Look, see...", "Yes", "No"],
+  [0, 600, "This isn't you... at all", "Yes", "No"],
+  [0, 600, "Wait unless you have an ulterior motive...", "Yes", "No"],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "Is this to spite someone?!!", "Yes", "No"],
+  [0, 600, "Look, there's no one here...", "Yes", "No"],
+  [0, 600, "CY isn't here :(", "Yes", "No"], // illegible name on whiteboard, guessed "She"
+  [0, 600, "She doesn't know about this", "Yes", "No"],
+  [0, 600, "This is just for you...", "Yes", "No"],
+  [0, 600, "So I guess", "Yes", "No"],
+  [0, 600, "That's not it??", "Yes", "No"],
+  [0, 600, "Look.....", "Yes", "No"],
+  [0, 600, "Boba still up on the table", "Yes", "No"],
+  [0, 600, "I can still give it to you if you want", "Yes", "No"],
+  [0, 600, "Just press no :)", "Yes", "No"],
+  [0, 600, "It's getting warm...", "Yes", "No"],
+  [1000, 800, ".....", null, null], // dot-row pause on whiteboard, no choice shown
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "Wait, what are you still clicking yes for??", "Yes", "No"],
+  [0, 600, "There's nothing left I promise", "Yes", "No"],
+  [0, 600, "Like really.....", "Yes", "No"],
+  [0, 600, "Why are you still clicking yes?!", "Yes", "No"],
+  [0, 600, "You should click No no??", "Yes", "No"],
+  [0, 600, "That's where you can see all your friends' stuff??", "Yes", "No"],
+  [0, 600, "There's nothing here I swear", "Yes", "No"],
+  [0, 600, "It's just me rambling to myself.....", "Yes", "No"],
+  [0, 600, "Okay...", "Yes", "No"],
+  [0, 600, "You know what?", "Yes", "No"],
+  [0, 600, "You just think it's FUNNY huh?!!?", "Yes", "No"],
+  [0, 600, "W41T --- WH4T5 H4PP3N1NG??", "Yes", "No"],
+  [0, 600, "TH15 1SNT M3??!", "Yes", "No"],
+
+  [0, 400, "Sorry", "Continue", null],
+  [0, 400, "Page lagged for a sec...", "Continue", null],
+  [2000, 500, "Lemme fix", "Continue", null],
+  [500, 1500, "Fix.....", "Continue", null],
+
+  [0, 600, "Are you happy now??!", "Yes", "No"],
+  [0, 600, "You broke the website...", "Yes", "No"],
+
+  [0, 600, "You made me angry", "Yes", "No"],
+  [0, 600, "And I don't wanna be angry at you", "Yes", "No"],
+  [0, 600, "Click no please...", "Yes", "No"],
+  [0, 600, "I really didn't wanna take this far", "Yes", "No"],
+  [0, 600, "If you don't click it, it's gonna break again...", "Yes", "No"],
+  [0, 600, "And I'm gonna be mad again...", "Yes", "No"],
+  [0, 600, "......", "Continue", null],
+  [0, 600, "Or are you being serious??", "Yes", "No"],
+  [0, 600, "Like you actually wanna be my gf??", "Yes", "No"],
+  [0, 600, "I mean...", "Yes", "No"],
+  [0, 600, "You did press like a bajillion times at this point", "Yes", "No"],
+  [0, 600, "I dunno what to think about it", "Yes", "No"],
+  [0, 600, "I thought we were joking around no??", "Yes", "No"],
+  [0, 600, "I thought we weren't serious??", "Yes", "No"],
+  [0, 600, "Well okay fine", "Yes", "No"],
+  [0, 600, "I guess you are", "Yes", "No"],
+  [0, 600, "So ummm...", "Yes", "No"],
+  [0, 600, "What do we do now?", "Yes", "No"],
+  [0, 600, "Like I don't have any plans for this", "Yes", "No"],
+  [0, 600, "I never thought you'd get this far", "Yes", "No"],
+  [0, 600, "And I've never thought about this being real...", "Yes", "No"],
+  [0, 600, "🌩️🌩️🌩️", "Continue", null],
+  [800, 1000, "Happy birthday!!!", null, null], // path end card
+
+  [0, 600, "Wait hold on... what happened", null, null],
+  [0, 600, "Lemme check my logs real quick...", null, null],
+  [1200, 800, ".....", null, null],
+
+  [0, 700, "Wait WHAT", null, null],
+  [0, 700, "You said yes??!", null, null],
+  [0, 700, "I was joking", null, null],
+  [0, 700, "Are you actually being serious???", null, null],
+  [0, 700, "Whatever... i dunno what to say", null, null],
+  [0, 700, "Happy birthday again", null, null],
+  [0, 700, "Thanks for clicking yes a bajillion times and building my ego...", null, null],
+];
+
+function showOverlay() {
+    const overlay = document.getElementById('myOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('hidden');
+    overlay.classList.add('visible');
+}
+
+function bindOverlayButtons() {
+    const yesbtn = document.getElementById('yesbtn');
+    const nobtn = document.getElementById('nobtn');
+    if (!yesbtn || !nobtn) return;
+
+    yesbtn.addEventListener('click', () => {
+        dialogueIndex = Math.min(dialogueIndex + 1, dialogueScript.length - 1);
+        birthdaySuprise();
+    });
+
+    nobtn.addEventListener('click', () => {
+        dialogueIndex = Math.min(dialogueIndex + 1, dialogueScript.length - 1);
+        birthdaySuprise();
+    });
+}
+
+async function birthdaySuprise() {
+    showOverlay();
+    const entry = dialogueScript[dialogueIndex] || dialogueScript[0];
+    await updateText(entry[0], entry[1], entry[2]);
+    updateButtons(entry[3], entry[4]);
+
+
+
+}
+
+async function updateText(delay,reveal,text) {
+    const message = document.getElementById("bdaymessage");
+    message.textContent = "";
+
+    await new Promise (resolve => setTimeout(resolve, delay));
+
+    const letterDelay = reveal / text.length;
+
+    for(let letter = 0; letter < text.length; letter++){
+        message.textContent += text.charAt(letter);
+        await new Promise (resolve => setTimeout(resolve, letterDelay));
+    }
+}
+
+function updateButtons(ybtn, nbtn) {
+    const yesbtn = document.getElementById("yesbtn");
+    const nobtn = document.getElementById("nobtn");
+    if (!yesbtn || !nobtn) return;
+
+    yesbtn.textContent = ybtn;
+    nobtn.textContent = nbtn;
+
+    const w = window.innerWidth - yesbtn.offsetWidth;
+    const h = window.innerHeight - yesbtn.offsetHeight;
+
+    yesbtn.style.cssText = `position:absolute; left:${Math.random() * w}px; top:${(() => {
+        let y = Math.random() * h;
+        while (y > window.innerHeight * 0.3 && y < window.innerHeight * 0.5) {
+            y = Math.random() * h;
+        }
+        return y;
+    })()}px`;
+    nobtn.style.position = 'relative';
+}
