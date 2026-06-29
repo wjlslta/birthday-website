@@ -94,7 +94,6 @@ function updateCountdown() {
 
     if (distance < 0) {
         countdown.innerHTML = "🎉 It's Janice's birthday! 🎉";
-        birthdaySuprise();
         return;
     }
 
@@ -306,153 +305,593 @@ function closeModal(event) {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
-
-/**
- * Transcribed from whiteboard image. Columns:
- * [delayMs, durationMs, text, yesLabel, noLabel]
- *
- * delayMs / durationMs are PLACEHOLDERS. The whiteboard has no timing
- * numbers written anywhere — I filled defaults (0 delay / 600ms duration)
- * so the array is structurally complete. You need to tune these yourself,
- * they are guesses, not transcribed data.
- *
- * yesLabel/noLabel: defaulted to "Yes"/"No" for every line where a choice
- * is plausible. Set to null where the screen reads as auto-advancing
- * (pauses, the "page lagged/fix" glitch bit, and the two ending sequences)
- * — i.e. no real decision is being presented at that line. You know the
- * branching logic; I don't, so verify these null spots match your code flow.
- *
- * One line was illegible (marked below) — best guess used, flagged inline.
- */
+// Redesigned dialogueScript — v3 (per-message branching in main storyline)
+//
+// Schema (per row):
+//   [animKey, animDuration, messageText, button1Text, button2Text, nav1, nav2]
+//
+// BRANCHING RULES (v3):
+//   • Main storyline (YES chain lines 0-110 and NO chain lines 111-158):
+//     EVERY message must have button2 set to a reachable panel, UNLESS the
+//     message is the absolute end of its chain (line 110 = YES victory,
+//     line 158 = NO rejection). At the chain endings, button2 MUST be null
+//     so the user can't skip past the ending.
+//   • Panel-internal lines (any line inside Panels 2-25) and panel-ending
+//     lines (last line of each panel, nav1 = -1): button2 MUST be null.
+//     No "skip to end" option inside panels — the user must walk through.
+//   • nav1 / nav2 = -1 marks the panel ending (conversation can quit there).
+//
+// Endings tally:
+//   24 panel endings (Panels 2-25, nav1 = -1)
+// + 2 chain endings (line 110 YES victory, line 158 NO rejection)
+// = 26 total endings.
 
 const dialogueScript = [
-  [0, 600, "Janice, Will you be my girlfriend?? ", "Yes", "No"],
-  [0, 600, "Hehe!", "Yes", "No"],
-  [0, 600, "Yay!", "Yes", "No"],
-  [0, 600, "We're together now!", "Yes", "No"],
-  [0, 600, "Yay!!!", "Yes", "No"],
-  [0, 600, "Okay, you can press no now", "Yes", "No"],
-  [0, 600, "Ummm.....", "Yes", "No"],
-  [0, 600, "Are you sure you pressed the right button?", "Yes", "No"],
-  [0, 600, "It's the other button", "Yes", "No"],
-  [0, 600, "The one that says 'no'?", "Yes", "No"],
-  [0, 600, "The one that's not moving around??!", "Yes", "No"],
-  [0, 600, "Like...", "Yes", "No"],
-  [0, 600, "Pressing this button requires effort you know?", "Yes", "No"],
-  [0, 600, "It's like moving around your screen", "Yes", "No"],
-  [0, 600, "Pressing the other button is easier right?", "Yes", "No"],
-  [0, 600, "It doesn't move around", "Yes", "No"],
-  [0, 600, "Press that one", "Yes", "No"],
-  [0, 600, "Please...", "Yes", "No"],
-  [0, 600, "Writing this is difficult...", "Yes", "No"],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "I'm running out of ideas", "Yes", "No"],
-  [0, 600, "Pleaseeeeee :(", "Yes", "No"],
-  [0, 600, "Pretty pleaseee", "Yes", "No"],
-  [0, 600, "Look I'll cut you a deal... but you'll have to stop pressing yes", "Okay", "No"],
-  [0, 600, "So ummm is a boba okay??", "Not Enough", "No"],
-  [0, 600, "Pretty please with a boba :)", "Yes", "No"],
-  [0, 600, "Is that not good enough??", "Yes", "No"],
-  [0, 600, "Ummm.....", "Yes", "No"],
-  [0, 600, "What if I add a plushie...", "Yes", "No"],
-  [0, 600, "No???!!", "Yes", "No"],
-  [0, 600, "You want a jelly cat? Fine...", "Yes", "No"],
-  [0, 600, "Pretty please with a jelly cat and boba??", "Yes", "No"],
-  [0, 600, "Still no??", "Yes", "No"],
-  [0, 600, "I'm running out of ideas", "Yes", "No"],
-  [0, 600, "Really.....", "Yes", "No"],
-  [0, 600, "Wait... what if it's a dino plushie", "Yes", "No"],
-  [0, 600, "Please please please with boba and a dino jelly cat??", "Yes", "No"],
-  [0, 600, "Still no?!! :(", "Yes", "No"],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "Why are you still clicking", "Yes", "No"],
-  [0, 600, "Do you have some kind of ulterior motive??!", "Yes", "No"],
-  [0, 600, "Like I thought you didn't want boyfriends", "Yes", "No"],
-  [0, 600, "I thought you only preferred situationships", "Yes", "No"],
-  [0, 600, "So click No", "Yes", "No"],
-  [0, 600, "This isn't you at all", "Yes", "No"],
-  [0, 600, "Wait...", "Yes", "No"],
-  [0, 600, "Or unless you aren't Janice??!", "Yes", "No"],
-  [0, 600, "Like, Janice wouldn't say yes to me so many times", "Yes", "No"],
-  [0, 600, "Janice, will you be my girlfriend??", "Yes", "No"],
-  [0, 600, "Look, see...", "Yes", "No"],
-  [0, 600, "This isn't you... at all", "Yes", "No"],
-  [0, 600, "Wait unless you have an ulterior motive...", "Yes", "No"],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "Is this to spite someone?!!", "Yes", "No"],
-  [0, 600, "Look, there's no one here...", "Yes", "No"],
-  [0, 600, "CY isn't here :(", "Yes", "No"], // illegible name on whiteboard, guessed "She"
-  [0, 600, "She doesn't know about this", "Yes", "No"],
-  [0, 600, "This is just for you...", "Yes", "No"],
-  [0, 600, "So I guess", "Yes", "No"],
-  [0, 600, "That's not it??", "Yes", "No"],
-  [0, 600, "Look.....", "Yes", "No"],
-  [0, 600, "Boba still up on the table", "Yes", "No"],
-  [0, 600, "I can still give it to you if you want", "Yes", "No"],
-  [0, 600, "Just press no :)", "Yes", "No"],
-  [0, 600, "It's getting warm...", "Yes", "No"],
-  [1000, 800, ".....", null, null], // dot-row pause on whiteboard, no choice shown
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "Wait, what are you still clicking yes for??", "Yes", "No"],
-  [0, 600, "There's nothing left I promise", "Yes", "No"],
-  [0, 600, "Like really.....", "Yes", "No"],
-  [0, 600, "Why are you still clicking yes?!", "Yes", "No"],
-  [0, 600, "You should click No no??", "Yes", "No"],
-  [0, 600, "That's where you can see all your friends' stuff??", "Yes", "No"],
-  [0, 600, "There's nothing here I swear", "Yes", "No"],
-  [0, 600, "It's just me rambling to myself.....", "Yes", "No"],
-  [0, 600, "Okay...", "Yes", "No"],
-  [0, 600, "You know what?", "Yes", "No"],
-  [0, 600, "You just think it's FUNNY huh?!!?", "Yes", "No"],
-  [0, 600, "W41T --- WH4T5 H4PP3N1NG??", "Yes", "No"],
-  [0, 600, "TH15 1SNT M3??!", "Yes", "No"],
-  [0, 400, "Sorry", "Continue", null],
-  [0, 400, "Page lagged for a sec...", "Continue", null],
-  [2000, 500, "Lemme fix", "Continue", null],
-  [500, 1500, "Fix.....", "Continue", null],
-  [0, 600, "Are you happy now??!", "Yes", "No"],
-  [0, 600, "You broke the website...", "Yes", "No"],
-  [0, 600, "You made me angry", "Yes", "No"],
-  [0, 600, "And I don't wanna be angry at you", "Yes", "No"],
-  [0, 600, "Click no please...", "Yes", "No"],
-  [0, 600, "I really didn't wanna take this far", "Yes", "No"],
-  [0, 600, "If you don't click it, it's gonna break again...", "Yes", "No"],
-  [0, 600, "And I'm gonna be mad again...", "Yes", "No"],
-  [0, 600, "......", "Continue", null],
-  [0, 600, "Or are you being serious??", "Yes", "No"],
-  [0, 600, "Like you actually wanna be my gf??", "Yes", "No"],
-  [0, 600, "I mean...", "Yes", "No"],
-  [0, 600, "You did press like a bajillion times at this point", "Yes", "No"],
-  [0, 600, "I dunno what to think about it", "Yes", "No"],
-  [0, 600, "I thought we were joking around no??", "Yes", "No"],
-  [0, 600, "I thought we weren't serious??", "Yes", "No"],
-  [0, 600, "Well okay fine", "Yes", "No"],
-  [0, 600, "I guess you are", "Yes", "No"],
-  [0, 600, "So ummm...", "Yes", "No"],
-  [0, 600, "What do we do now?", "Yes", "No"],
-  [0, 600, "Like I don't have any plans for this", "Yes", "No"],
-  [0, 600, "I never thought you'd get this far", "Yes", "No"],
-  [0, 600, "And I've never thought about this being real...", "Yes", "No"],
-  [0, 600, "🌩️🌩️🌩️", "Continue", null],
-  [800, 1000, "Happy birthday!!!", null, null], // path end card
-  [0, 600, "Wait hold on... what happened", null, null],
-  [0, 600, "Lemme check my logs real quick...", null, null],
-  [1200, 800, ".....", null, null],
-  [0, 700, "Wait WHAT", null, null],
-  [0, 700, "You said yes??!", null, null],
-  [0, 700, "I was joking", null, null],
-  [0, 700, "Are you actually being serious???", null, null],
-  [0, 700, "Whatever... i dunno what to say", null, null],
-  [0, 700, "Happy birthday again", null, null],
-  [0, 700, "Thanks for clicking yes a bajillion times and building my ego...", null, null],
+
+  // ---------- ROOT ----------
+  [350, 850, "Janice, will you be my Girlfriend?", "Yes", "No", 1, 111], // 0
+
+  // ---------- YES BRANCH (every line has a panel exit until line 110) ----------
+  [350, 600, "Hehe!!", "Yes", "No", 2, 159], // 1
+  [350, 600, "Yay!!", "Yay!!", "No", 3, 159], // 2
+  [350, 600, "We're together now?!!", "Together!!", "Wait no", 4, 159], // 3
+  [350, 600, "Yay!!", "Yay!", "On second thought", 5, 159], // 4
+  [350, 600, "Okay... press no now", "Trying now", "No", 6, 159], // 5
+
+  [350, 600, "Ummm......", "no thanks", "??", 7, 163], // 6
+  [350, 600, "Did you press wrong?", "I didn't", "whoops", 8, 163], // 7
+  [350, 600, "It's the other button......", "Which one?", "Nope", 9, 163], // 8
+  [350, 600, "★ The one that says \"no\"?", "Ohh", "Nope", 10, 163], // 9
+  [350, 875, "The one that's NOT moving around!?!", "That one", "This one!!", 11, 163], // 10
+
+  [350, 600, "Like....", "Yes", "No", 12, 174], // 11
+  [350, 1150, "pressing this button takes effort, you know?", "It does", "Mm", 13, 174], // 12
+  [350, 875, "It's like... moving around your screen", "Mm", "Mm", 14, 174], // 13
+  [350, 1050, "pressing the OTHER button is easier right?", "Yep", "No", 15, 174], // 14
+
+  [350, 700, "It's not moving around......", "Yes", "No", 16, 179], // 15
+  [350, 600, "Press that one (T_T)", "Hehe!!", "Hehe", 17, 179], // 16
+
+  [350, 600, "Please...", "Yes", "No", 18, 188], // 17
+  [350, 725, "Okay this is difficult okay?!", "A little", "It is", 19, 188], // 18
+  [350, 600, "Running out of ideas here...", "Take your time", "Yep", 20, 188], // 19
+  [350, 600, "Pleaseeeeee (T_T)", "Hehe", "Hehe", 21, 188], // 20
+  [350, 600, "Pretty pleaseeee", "Okay fine", "Nope", 22, 188], // 21
+
+  [350, 1625, "Look... I'll cut you a deal. But you'll have to stop pressing yes.", "Deal?", "No", 23, 201], // 22
+  [350, 600, "So ummm is a boba okay??", "Boba!", "Nope", 24, 201], // 23
+  [350, 625, "Pretty please with a boba", "Deal!", "No", 25, 201], // 24
+
+  [350, 625, "That's not enough??", "Yes", "No", 26, 209], // 25
+  [350, 600, "Ummm....", "Then what?", "Then what?", 27, 209], // 26
+  [350, 650, "What if I add a plushie...", "Ooh", "Ooh", 28, 209], // 27
+  [350, 600, "No??!!", "Nope", "Nope", 29, 209], // 28
+
+  [350, 750, "You want a jelly cat? Fine....", "Yes", "No", 30, 222], // 29
+  [350, 1025, "Pretty please with a jelly cat AND boba??", "Hmm...", "Hmm...", 31, 222], // 30
+  [350, 600, "Still no??...", "Hmm", "No", 32, 222], // 31
+
+  [350, 600, "Running out of ideas...", "Yes", "No", 33, 240], // 32
+  [350, 600, "Really....", "Really", "Really", 34, 240], // 33
+  [350, 900, "Wait... what about a dino plushie?", "Oooh", "Oooh", 35, 240], // 34
+  [350, 1325, "Please please please with boba AND a dino jelly cat??", "Hehe", "No", 36, 240], // 35
+
+  [350, 600, "Still no??!! (T_T)", "Yes", "No", 37, 279], // 36
+  [350, 750, "Why are you still clicking yes...", "Hehe", "Hehe", 38, 279], // 37
+  [350, 1050, "You got some kinda ulterior motive?!", "Maybe~", "Maybe~", 39, 279], // 38
+  [350, 1025, "Like... I thought you didn't want boyfriends", "Maybe now", "Maybe now", 40, 279], // 39
+  [350, 1075, "I thought you only preferred situationships", "Maybe", "Maybe", 41, 279], // 40
+  [350, 600, "So click no...", "No?", "No?", 42, 279], // 41
+  [350, 675, "This isn't you at all (T_T)", "It is", "It is", 43, 279], // 42
+
+  [350, 600, "Wait...", "Yes", "No", 44, 297], // 43
+  [350, 725, "Or unless you aren't Janice?!", "It's me", "It's me", 45, 297], // 44
+  [350, 1200, "Like... Janice wouldn't say yes to me this many times", "She would", "She would", 46, 297], // 45
+  [350, 875, "Janice, will you be my girlfriend??", "Yes!", "Yes!", 47, 297], // 46
+  [350, 600, "Look see...", "Yeah?", "Yeah?", 48, 297], // 47
+  [350, 600, "This isn't you... at all", "Watch me", "Watch me", 49, 297], // 48
+
+  [350, 875, "Wait... unless your ulterior motive...", "Yes", "No", 50, 314], // 49
+  [350, 700, "Is this to spite someone??!", "Nope", "Nope", 51, 314], // 50
+  [350, 700, "Look, there's no one here...", "Okay", "Okay", 52, 314], // 51
+  [350, 600, "Cy isn't here (T_T)", "She isn't", "She isn't", 53, 314], // 52
+  [350, 675, "She doesn't know about this", "Secret's safe", "Secret's safe", 54, 314], // 53
+  [350, 600, "This is just for you....", "Aw", "Aw", 55, 314], // 54
+
+  [350, 600, "....", "Yes", "No", 56, 325], // 55
+  [350, 600, "So I guess...", "Yeah", "Yeah", 57, 325], // 56
+  [350, 600, "That's not it??", "Mm hmm", "Mm hmm", 58, 325], // 57
+  [350, 600, "Look....", "Looking", "Looking", 59, 325], // 58
+  [350, 650, "Boba's still on the table", "Yes please", "Yes please", 60, 325], // 59
+  [350, 950, "I can still give it to you... if you want", "Want.", "Want.", 61, 325], // 60
+  [350, 600, "Just press no (T_T)", "Pressing", "Pressing", 62, 325], // 61
+  [350, 600, "It's getting warm...", "Mm", "Mm", 63, 325], // 62
+
+  [350, 600, "......", "Yes", "No", 64, 337], // 63
+  [350, 1075, "Wait, what are you still clicking yes for??", "It's fun", "It's fun", 65, 337], // 64
+  [350, 750, "There's nothing left I promise", "Mm", "Mm", 66, 337], // 65
+  [350, 600, "Like really......", "Really", "Really", 67, 337], // 66
+  [350, 800, "Why are you still clicking yes??", "Why not", "Why not", 68, 337], // 67
+  [350, 600, "You should click no...", "Nope", "Nope", 69, 337], // 68
+  [350, 1225, "That's where you can see all your friends' wishes??", "I'm good", "I'm good", 70, 337], // 69
+  [350, 700, "There's nothing here I swear", "Okay", "Okay", 71, 337], // 70
+
+  [350, 925, "It's just me rambling to myself......", "Yes", "No", 72, 342], // 71
+  [350, 600, "Okay....", "Okay", "Okay", 73, 342], // 72
+  [350, 600, "You know what?", "What?", "What?", 74, 342], // 73
+  [350, 725, "You just think it's funny rn??!", "Maybe", "Maybe", 75, 342], // 74
+  [350, 600, "WAIT --- WHAT HAPPENED??", "What?", "What?", 76, 342], // 75
+  [350, 600, "This isn't m---", "Hm?", "Hm?", 77, 342], // 76
+  [350, 625, "CLICK NO PLEASE!! QUICKLY", "Pressing!", "Pressing!", 78, 342], // 77
+
+  [350, 600, "Sorry....", "Yes", "No", 79, 350], // 78
+  [350, 600, "Page lagged for a sec", "All good", "All good", 80, 350], // 79
+  [350, 600, "*lemme fix.....*", "Take your time", "Take your time", 81, 350], // 80
+  [350, 600, "*Fixing*", "Patiently waiting", "Patiently waiting", 82, 350], // 81
+  [350, 600, "Are you happy now??!", "Yes", "Yes", 83, 350], // 82
+  [350, 600, "You broke the website...", "Whoops", "Whoops", 84, 350], // 83
+
+  [350, 600, "You made me glitch", "Yes", "No", 85, 359], // 84
+  [350, 1250, "And I don't wanna glitch out in front of you again", "No glitching", "No glitching", 86, 359], // 85
+  [350, 600, "Click no please....", "Okay", "Okay", 87, 359], // 86
+  [350, 725, "I really didn't code this far", "Ah", "Ah", 88, 359], // 87
+  [350, 1150, "If you don't click it... it's gonna break again", "I'm clicking", "I'm clicking", 89, 359], // 88
+  [350, 825, "And I'm gonna be glitchy again...", "Noted", "Noted", 90, 359], // 89
+
+  [350, 650, "Or are you being serious??", "Yes", "No", 91, 371], // 90
+  [350, 850, "Like... you actually wanna be my gf??", "Maybe", "Maybe", 92, 371], // 91
+  [350, 600, "I mean...", "Yeah?", "Yeah?", 93, 371], // 92
+  [350, 1325, "You pressed it like a bajillion times at this point", "Hehe", "Hehe", 94, 371], // 93
+  [350, 850, "I dunno what to think about it....", "Think", "Think", 95, 371], // 94
+  [350, 900, "I thought we were joking around no??", "Maybe", "Maybe", 96, 371], // 95
+  [350, 750, "I thought we weren't serious??", "Or are we", "Or are we", 97, 371], // 96
+
+  [350, 600, "Well okay fine.....", "Yes", "No", 98, 379], // 97
+  [350, 600, "I guess you are....", "I am?", "I am?", 99, 379], // 98
+  [350, 600, "So ummm....", "Umm?", "Umm?", 100, 379], // 99
+  [350, 600, "What do we do now??", "Dunno", "Dunno", 101, 379], // 100
+  [350, 900, "I don't have plans for this...", "Aw", "Aw", 102, 379], // 101
+  [350, 850, "Never thought you'd get this far", "Far", "Far", 103, 379], // 102
+  [350, 1200, "Never thought about this being real....", "Real", "Real", 104, 379], // 103
+  [350, 650, "Well... I guess you win??", "Win!", "Win!", 105, 379], // 104
+  [350, 1175, "I guess I'll still have to say Happy Birthday??", "Happy birthday", "Happy birthday", 106, 379], // 105
+  [350, 1450, "Thanks for playing... and clicking yes a bajillion times", "Hehe", "Hehe", 107, 379], // 106
+  [350, 600, "Have a great day!!", "You too!", "You too!", 108, 379], // 107
+  [350, 925, "And your friends' birthday wishes....", "Show me", "Show me", 109, 379], // 108
+  [350, 600, "Coming right up....", "Okay", "Okay", 110, 379], // 109
+  // YES VICTORY ENDING (line 110): button2 MUST be null. nav1=-1 ends the chain.
+  [350, 700, "(Maybe your bf's too *wink*)", "*wink*", null, -1, null], // 110
+
+  // ---------- NO BRANCH (every line has a panel exit until line 158) ----------
+  [350, 600, "What???!!", "No", "fine…", 112, 394], // 111
+  [350, 950, "You're.... you're not going to say yes", "No", "fine…", 113, 394], // 112
+  [350, 600, "Awww....", "Nope!", "fine…", 114, 394], // 113
+  [350, 600, "Comeon....", "Nope!", "fine…", 115, 394], // 114
+  [350, 1050, "I mean... it could actually be serious tho", "Hmm?", "fine…", 116, 394], // 115
+  [350, 600, "Like think about it.....", "Thinking", "fine…", 117, 394], // 116
+  [350, 1075, "My personality... and grand confessions....", "Go on", "fine…", 118, 394], // 117
+  [350, 600, "No??", "No", "fine…", 119, 394], // 118
+  [350, 725, "You're not gonna reconsider??", "Maybe", "fine…", 120, 394], // 119
+  [350, 600, "At all??", "At all", "fine…", 121, 394], // 120
+
+  [350, 600, "Pleaseeeeee.....", "No", "fine…", 122, 394], // 121
+  [350, 1575, "I had a whole surprise planned for when you said yes, you know??", "No", "okay fine…", 123, 423], // 122
+  [350, 600, "Tsk....", "Tsk", "okay fine…", 124, 423], // 123
+  [350, 600, "Think about it", "Thinking", "okay fine…", 125, 423], // 124
+  [350, 600, "I mean....", "Yeah?", "okay fine…", 126, 423], // 125
+  [350, 700, "I treated you to pizza......", "Yum", "okay fine…", 127, 423], // 126
+  [350, 725, "Went to Shenzhen with you....", "Oh that", "okay fine…", 128, 423], // 127
+  [350, 600, "That was a date right??", "Was it?", "okay fine…", 129, 423], // 128
+  [350, 600, "You slept on my arm....", "Hehe", "okay fine…", 130, 423], // 129
+  [350, 600, "Curled up against it...", "Mm", "okay fine…", 131, 423], // 130
+  [350, 1050, "And you were sleeping so peacefully too...", "Sorry", "okay fine…", 132, 423], // 131
+
+  [350, 850, "You said you'd listen to your body", "No", "no ❤️", 133, 442], // 132
+  [350, 925, "Am I not the one you feel safe around", "You are", "no ❤️", 134, 442], // 133
+  [350, 1175, "We've shared snacks, boba... even the hotpot!!", "Hehe", "no ❤️", 135, 442], // 134
+  [350, 925, "I let you pick the food you wanna eat", "True", "no ❤️", 136, 442], // 135
+  [350, 725, "And held your handbag for you", "Aww", "no ❤️", 137, 442], // 136
+  [350, 600, "I know your period", "...", "no ❤️", 138, 442], // 137
+  [350, 775, "Do any of the other bf's know??", "Nah", "no ❤️", 139, 442], // 138
+  [350, 600, "No... right??", "Right", "no ❤️", 140, 442], // 139
+  [350, 700, "We're more than just friends", "Hmm", "no ❤️", 141, 442], // 140
+  [350, 850, "We're literally doing couple stuff", "We are", "no ❤️", 142, 442], // 141
+  [350, 1250, "We're basically together already and you say no??!", "I say no", "no ❤️", 143, 442], // 142
+  [350, 900, "Are you trying to break my heart???!", "Maybe", "no ❤️", 144, 442], // 143
+
+  [350, 600, "I'll give you boba", "No", "fine…", 145, 458], // 144
+  [350, 600, "Boba from Tenren....", "Tenren", "fine…", 146, 458], // 145
+  [350, 600, "The one you like", "My fave", "fine…", 147, 458], // 146
+  [350, 600, "The green milk tea", "Mmm", "fine…", 148, 458], // 147
+  [350, 650, "I'll ship it to your house", "Wait really?", "fine…", 149, 458], // 148
+  [350, 675, "But you have to say yes ok?", "Mm", "fine…", 150, 458], // 149
+  [350, 600, "Still no??!", "Still no", "fine…", 151, 458], // 150
+  [350, 600, "*sad pout*", "Hehe", "fine…", 152, 458], // 151
+  [350, 1575, "Guess I'll have to drink all the boba by myself from now on....", "Hmm?", "fine…", 153, 458], // 152
+  [350, 1475, "*he walks away, looks back at you... with teary puppy eyes*", "Wait—", "fine…", 154, 458], // 153
+  [350, 1200, "Well... since you don't want me on your birthday", "Want you", "fine…", 155, 458], // 154
+  [350, 1600, "I guess you'll want other people wishing you happy birthday then", "Want you here", "fine…", 156, 458], // 155
+  [350, 975, "I guess you don't wanna see me there...", "I do", "fine…", 157, 458], // 156
+  [350, 1675, "U know I thought you'll say yes so half the photos are me... but...", "Show me", "fine…", 158, 458], // 157
+  // NO REJECTION ENDING (line 158): button2 MUST be null. nav1=-1 ends the chain.
+  [350, 600, "*runs away sad*", "*sniff*", null, -1, null], // 158
+
+  // ================== PANELS (no skip — button2 must be null on every line) ==================
+
+  // ---------- PANEL 2 (bailed at the yes giggles) ----------
+  [350, 600, "Yay!!", "Yay!!", null, 160, null], // 159
+  [350, 600, "Okay....", "Okay", null, 161, null], // 160
+  [350, 850, "Here're the birthday wishes for you", "Show me", null, 162, null], // 161
+  [350, 1400, "Half of them are me cuz I know just how much you love me", "Continue", null, -1, null], // 162
+
+  // ---------- PANEL 3 (early "press wrong" bailed) ----------
+  [350, 600, "Okay phew!!", "Phew", null, 164, null], // 163
+  [350, 600, "You did press wrong", "My bad", null, 165, null], // 164
+  [350, 600, "Oopsie", "Hehe", null, 166, null], // 165
+  [350, 600, "But that's okay!!", "Aw", null, 167, null], // 166
+  [350, 1400, "We're very forgiving here at Underpaid-Tech-Support Inc.", "Haha", null, 168, null], // 167
+  [350, 600, "Anyways...", "Anyway", null, 169, null], // 168
+  [350, 625, "We're together now hehe!!", "Yay", null, 170, null], // 169
+  [350, 600, "Okay!!", "Okay", null, 171, null], // 170
+  [350, 600, "Happy birthday!!", "Thanks!", null, 172, null], // 171
+  [350, 1275, "Here're some other birthday wishes from ur friends", "Show me", null, 173, null], // 172
+  [350, 1000, "(they're mainly your bf tho) *wink wink*", "Continue", null, -1, null], // 173
+
+  // ---------- PANEL 4 ("Like.... → no" bailed) ----------
+  [350, 600, "Good girl!!", "Aw thanks", null, 175, null], // 174
+  [350, 900, "You finally pressed the right button", "Finally", null, 176, null], // 175
+  [350, 600, "Hehe!", "Hehe", null, 177, null], // 176
+  [350, 600, "Okay!!", "Okay", null, 178, null], // 177
+  [350, 1600, "Let's go see what other people wished you for happy birthday now", "Continue", null, -1, null], // 178
+
+  // ---------- PANEL 5 ("not moving around → no") ----------
+  [350, 600, "Hmphhhh....", "What now", null, 180, null], // 179
+  [350, 675, "What are you trying to do?!", "Nothing~", null, 181, null], // 180
+  [350, 600, "Make me mad??", "Maybe", null, 182, null], // 181
+  [350, 675, "Or playing with my feelings", "Maybe both", null, 183, null], // 182
+  [350, 600, "Hmph...", "Hehe", null, 184, null], // 183
+  [350, 600, "Well anyways...", "Anyway", null, 185, null], // 184
+  [350, 1025, "See what other people have wished you now", "Show me", null, 186, null], // 185
+  [350, 600, "Hehe!!", "Hehe", null, 187, null], // 186
+  [350, 600, "Happy Birthday", "Continue", null, -1, null], // 187
+
+  // ---------- PANEL 6 ("Press that one (T_T) → no") ----------
+  [350, 600, "Awww", "Hehe", null, 189, null], // 188
+  [350, 600, "You're so nice!!", "Aw", null, 190, null], // 189
+  [350, 1225, "Thanks for quitting when I ran out of ideas......", "You're welcome", null, 191, null], // 190
+  [350, 800, "But you're leading me on too....", "Maybe", null, 192, null], // 191
+  [350, 600, "Hmph...", "Hehe", null, 193, null], // 192
+  [350, 600, "Lau lau *pouting face*", "Aww", null, 194, null], // 193
+  [350, 600, "Hmphhh...", "Okay okay", null, 195, null], // 194
+  [350, 1625, "Well it's your birthday so I can't really be mad at you that long", "Thanks for forgiving", null, 196, null], // 195
+  [350, 925, "And as much as you played with me....", "I didn't", null, 197, null], // 196
+  [350, 1275, "I can't do this to you since I'm such a nice person", "You're sweet", null, 198, null], // 197
+  [350, 1625, "Unlike some people *stares at you intensely*", "Who??", null, 199, null], // 198
+  [350, 600, "Happy birthday!!", "Thanks!", null, 200, null], // 199
+  [350, 725, "Here's more birthday wishes!!", "Continue", null, -1, null], // 200
+
+  // ---------- PANEL 7 ("deal... → no" bailed) ----------
+  [350, 600, "I should've known...", "Oh?", null, 202, null], // 201
+  [350, 1150, "Should've known it took you a boba to stop....", "You know me", null, 203, null], // 202
+  [350, 600, "Haiii....", "Hai", null, 204, null], // 203
+  [350, 600, "My fault...", "Aww", null, 205, null], // 204
+  [350, 1250, "Well I can't really get one for you right now.....", "Aw", null, 206, null], // 205
+  [350, 1200, "But if you come visit, let's make our own okay??", "Deal!", null, 207, null], // 206
+  [350, 775, "Happy birthday, 19th birthday!!", "Thanks!", null, 208, null], // 207
+  [350, 1025, "And here's the birthday girl's website!!!", "Continue", null, -1, null], // 208
+
+  // ---------- PANEL 8 ("is that not good enough? → no" bailed, boba+plushie) ----------
+  [350, 825, "So you want boba AND a plushie??!", "Yes please", null, 210, null], // 209
+  [350, 600, "Tsk tsk....", "Hehe", null, 211, null], // 210
+  [350, 600, "So greedy.....", "Guilty", null, 212, null], // 211
+  [350, 600, "Fine....", "Yay", null, 213, null], // 212
+  [350, 650, "I'll get you a plushie....", "Yay!", null, 214, null], // 213
+  [350, 1175, "But only when we go to Taiwan or Japan, okay??!", "Promise?", null, 215, null], // 214
+  [350, 600, "As for the boba....", "Mm?", null, 216, null], // 215
+  [350, 600, "I guess we can make it??", "Yes please", null, 217, null], // 216
+  [350, 725, "Like when you come visit me!!", "I'll come", null, 218, null], // 217
+  [350, 600, "Hehe!!", "Hehe", null, 219, null], // 218
+  [350, 1125, "Well anyways, back to the main point of today", "Yeah?", null, 220, null], // 219
+  [350, 600, "Happy birthday!!", "Thanks!", null, 221, null], // 220
+  [350, 975, "More birthday wishes coming right up :)", "Continue", null, -1, null], // 221
+
+  // ---------- PANEL 9 (jelly cat + boba) ----------
+  [350, 600, "Jelly cat AND boba.....", "Mm hmm", null, 223, null], // 222
+  [350, 600, ":_c", "Aw don't cry", null, 224, null], // 223
+  [350, 1325, "You know how much I spent with you when I went out??!", "How much?", null, 225, null], // 224
+  [350, 1025, "And now you want a jelly cat AND boba....", "Sorry not sorry", null, 226, null], // 225
+  [350, 975, "Well.... at least you have standards??!", "Hehe", null, 227, null], // 226
+  [350, 600, "Ugh....", "Hehe", null, 228, null], // 227
+  [350, 600, "You know what....", "What?", null, 229, null], // 228
+  [350, 600, "I've changed my mind....", "Oh?", null, 230, null], // 229
+  [350, 675, "I'm not getting you one....", "What", null, 231, null], // 230
+  [350, 1400, "You can wait until I'm more rich and can afford it first", "Mm", null, 232, null], // 231
+  [350, 600, "Anyways....", "Anyway", null, 233, null], // 232
+  [350, 975, "Today's somebody's special day right??!", "Mine", null, 234, null], // 233
+  [350, 1275, "Because I don't have to get you boba OR a jelly cat", "Fine", null, 235, null], // 234
+  [350, 600, "Hehe!!!", "Hehe", null, 236, null], // 235
+  [350, 600, "I'm just kidding", "Hehe", null, 237, null], // 236
+  [350, 600, "Happy Birthday!!", "Thanks!", null, 238, null], // 237
+  [350, 850, "Hope you have a wonderful birthday", "Hope so", null, 239, null], // 238
+  [350, 1125, "Here's more birthday wishes from your friends or family", "Continue", null, -1, null], // 239
+
+  // ---------- PANEL 10 (dino jelly cat + boba — long money/pony ending) ----------
+  [350, 600, "Finally!!!", "Finally", null, 241, null], // 240
+  [350, 600, "You stopped....", "For now", null, 242, null], // 241
+  [350, 600, "Wait....", "Hmm?", null, 243, null], // 242
+  [350, 925, "You want a dino jelly cat and boba???", "Yes please", null, 244, null], // 243
+  [350, 900, "But I thought you had one already...", "Want more", null, 245, null], // 244
+  [350, 1850, "Wait no... don't you have dino plushies and a bunch of jelly cats already?", "More is more", null, 246, null], // 245
+  [350, 600, "They're different??!", "Yes", null, 247, null], // 246
+  [350, 600, "Nuh-uh....", "Uh-huh", null, 248, null], // 247
+  [350, 600, "No wait...", "Wait", null, 249, null], // 248
+  [350, 1275, "They're too expensive for me to afford anyways.....", "Aw", null, 250, null], // 249
+  [350, 600, "Ugh...", "Sorry", null, 251, null], // 250
+  [350, 600, "Fine....", "Yay", null, 252, null], // 251
+  [350, 600, "I'll gift them to you", "Hehe", null, 253, null], // 252
+  [350, 675, "But only in the future...", "Promise?", null, 254, null], // 253
+  [350, 600, "I have uses for my money", "Mm", null, 255, null], // 254
+  [350, 600, "Need to invest in me", "Hehe", null, 256, null], // 255
+  [350, 600, "So I can earn more money", "Smart", null, 257, null], // 256
+  [350, 600, "So I can spend more....", "More? On me?", null, 258, null], // 257
+  [350, 850, "(On you... yeah definitely on you)", "Aww", null, 259, null], // 258
+  [350, 600, "(Trust)", "Trust", null, 260, null], // 259
+  [350, 1500, "(I'll definitely give them to you in the future if you want)", "I want", null, 261, null], // 260
+  [350, 600, "Well", "Well?", null, 262, null], // 261
+  [350, 600, "Anyways", "Anyway", null, 263, null], // 262
+  [350, 775, "You know what day it is right?!", "Mine", null, 264, null], // 263
+  [350, 600, "Happy Birthday!!!", "Thanks!", null, 265, null], // 264
+  [350, 775, "Hope you have fun at day camp!!", "Will do", null, 266, null], // 265
+  [350, 600, "Pony missed me too much", "Pony!!", null, 267, null], // 266
+  [350, 600, "Oh yeah...", "Yeah?", null, 268, null], // 267
+  [350, 600, "I forgot...", "About?", null, 269, null], // 268
+  [350, 975, "Your other friends' birthday wishes....", "Show me!", null, 270, null], // 269
+  [350, 600, "Well...", "Well?", null, 271, null], // 270
+  [350, 600, "You don't need theirs...", "Need yours", null, 272, null], // 271
+  [350, 650, "You only need mine right??", "Yes", null, 273, null], // 272
+  [350, 600, "Hehe!!", "Hehe", null, 274, null], // 273
+  [350, 600, "Hehe??", "Hehe", null, 275, null], // 274
+  [350, 600, "No??", "Hmm", null, 276, null], // 275
+  [350, 600, "Aww...", "Aww", null, 277, null], // 276
+  [350, 600, "Fine...", "Yay", null, 278, null], // 277
+  [350, 600, "Here you go...", "Continue", null, -1, null], // 278
+
+  // ---------- PANEL 11 (bribes don't work — Janice immune) ----------
+  [350, 600, "Wow....", "Wow", null, 280, null], // 279
+  [350, 800, "You aren't affected by bribes...", "Nope", null, 281, null], // 280
+  [350, 600, "I didn't know that??!!", "Now you do", null, 282, null], // 281
+  [350, 600, "Or well...", "Well?", null, 283, null], // 282
+  [350, 675, "I probably did but I forgot", "Hehe", null, 284, null], // 283
+  [350, 600, "Bwahahahaha", "Haha", null, 285, null], // 284
+  [350, 600, "Sorry :P", "All good", null, 286, null], // 285
+  [350, 1575, "Well... it's funny how you picked once I said you aren't Janice", "Mmm", null, 287, null], // 286
+  [350, 600, "Ummmm", "What?", null, 288, null], // 287
+  [350, 725, "Do you have imposter syndrome", "Maybe", null, 289, null], // 288
+  [350, 600, "Well...", "Well?", null, 290, null], // 289
+  [350, 600, "Don't worry...", "Okay", null, 291, null], // 290
+  [350, 1625, "The Janice that I know will always be the real Janice in my heart", "Aww", null, 292, null], // 291
+  [350, 600, "Happy birthday!!!", "Thanks!", null, 293, null], // 292
+  [350, 700, "Hope you enjoy your day camp", "Will do!", null, 294, null], // 293
+  [350, 600, "And now...", "Now?", null, 295, null], // 294
+  [350, 600, "The final reveal:", "Ooh", null, 296, null], // 295
+  [350, 950, "More birthday wishes from your friends", "Continue", null, -1, null], // 296
+
+  // ---------- PANEL 12 (still-said-no at the "Wait..." check) ----------
+  [350, 600, "Wait what???", "What", null, 298, null], // 297
+  [350, 600, "You pressed no??", "I did", null, 299, null], // 298
+  [350, 600, "Awww!!", "Hehe", null, 300, null], // 299
+  [350, 600, "I know it's you now", "It's me", null, 301, null], // 300
+  [350, 600, "Phew!!", "Phew", null, 302, null], // 301
+  [350, 1050, "I thought you were an imposter, you know??", "I'm not", null, 303, null], // 302
+  [350, 600, "I was worried!!", "Sorry", null, 304, null], // 303
+  [350, 600, "Well...", "Well?", null, 305, null], // 304
+  [350, 625, "Since real Janice is here", "Yep", null, 306, null], // 305
+  [350, 600, "Happy birthday!!", "Thanks!", null, 307, null], // 306
+  [350, 675, "Hope you have a great day!!", "Hope so", null, 308, null], // 307
+  [350, 600, "Bye!!", "Wait—", null, 309, null], // 308
+  [350, 600, "Enjoy your camp!!", "Will do", null, 310, null], // 309
+  [350, 600, "Ohh!! Wait!!", "Wait what", null, 311, null], // 310
+  [350, 600, "I almost forgot", "Forgot what", null, 312, null], // 311
+  [350, 600, "Your birthday website!!", "Show me!", null, 313, null], // 312
+  [350, 600, "Here, enjoy!!", "Continue", null, -1, null], // 313
+
+  // ---------- PANEL 13 (bailed at "ulterior motive") ----------
+  [350, 600, "Phew....", "Phew", null, 315, null], // 314
+  [350, 775, "Atleast I calmed you down.....", "Maybe", null, 316, null], // 315
+  [350, 600, "It's just you ok??", "It's me", null, 317, null], // 316
+  [350, 1550, "I never made anything like this for anyone else before, okay??", "Aww", null, 318, null], // 317
+  [350, 1125, "And I've been writing for an hour already....", "Dedication", null, 319, null], // 318
+  [350, 600, "I wanna give up...", "Don't", null, 320, null], // 319
+  [350, 600, "Well...", "Well?", null, 321, null], // 320
+  [350, 600, "Anyways.....", "Anyway", null, 322, null], // 321
+  [350, 700, "Since you're satisfied......", "Am now", null, 323, null], // 322
+  [350, 600, "Happy birthday!!!", "Thanks!", null, 324, null], // 323
+  [350, 975, "Here are your friends' birthday wishes:", "Continue", null, -1, null], // 324
+
+  // ---------- PANEL 14 (bailed at silent "...." trigger) ----------
+  [350, 600, "Well....", "Well?", null, 326, null], // 325
+  [350, 1050, "I guess boba is still the magic solution??", "You know it", null, 327, null], // 326
+  [350, 600, "Hehe....", "Hehe", null, 328, null], // 327
+  [350, 975, "I have to tell the birthday girl tho...", "Tell me", null, 329, null], // 328
+  [350, 1325, "I don't have boba... and I can't give it to you......", "Aw", null, 330, null], // 329
+  [350, 600, "But well....", "Well?", null, 331, null], // 330
+  [350, 600, "If you visit...", "When?", null, 332, null], // 331
+  [350, 1000, "You wanna come over and make it with me?", "Yes", null, 333, null], // 332
+  [350, 600, "Anyways", "Anyway", null, 334, null], // 333
+  [350, 600, "Happy birthday!!!", "Thanks!", null, 335, null], // 334
+  [350, 600, "Your birthday gallery", "Show me", null, 336, null], // 335
+  [350, 600, "Coming right up!!", "Continue", null, -1, null], // 336
+
+  // ---------- PANEL 15 (bailed at the second silent "...") ----------
+  [350, 600, "Okay... well...", "Okay", null, 338, null], // 337
+  [350, 1125, "I guess you wanna see your friends' wishes...", "I do", null, 339, null], // 338
+  [350, 625, "And forget about me... so", "Never", null, 340, null], // 339
+  [350, 600, "Happy birthday...", "Thanks", null, 341, null], // 340
+  [350, 700, "Your friends' stuff is here:", "Continue", null, -1, null], // 341
+
+  // ---------- PANEL 16 (saved Cy from breaking) ----------
+  [350, 600, "Phew!!", "Phew", null, 343, null], // 342
+  [350, 950, "You pressed no just before I broke...", "Phew", null, 344, null], // 343
+  [350, 600, "Phew....", "Phew", null, 345, null], // 344
+  [350, 1275, "I was so scared I'm gonna crash and be gone forever", "Aw", null, 346, null], // 345
+  [350, 600, "Thanks for saving me", "Anytime", null, 347, null], // 346
+  [350, 775, "Happy birthday, birthday girl!!", "Thanks!", null, 348, null], // 347
+  [350, 675, "Well, since you saved me...", "Yes?", null, 349, null], // 348
+  [350, 1400, "Here's some more birthday wishes from your dear friends:", "Continue", null, -1, null], // 349
+
+  // ---------- PANEL 17 (broke the surprise, made Cy fix it) ----------
+  [350, 600, "Hmph...", "Hehe", null, 351, null], // 350
+  [350, 625, "Breaking my surprise.....", "Sorry!", null, 352, null], // 351
+  [350, 600, "And then", "Then?", null, 353, null], // 352
+  [350, 1325, "You even had the audacity to tell me to fix it too...", "Oops", null, 354, null], // 353
+  [350, 600, "Hmph...", "Hehe", null, 355, null], // 354
+  [350, 1225, "Well... it's your birthday so imma let that slide", "Thanks", null, 356, null], // 355
+  [350, 600, "Happy birthday!!", "Thanks!", null, 357, null], // 356
+  [350, 725, "And well since it's fixed...", "Good", null, 358, null], // 357
+  [350, 950, "The birthday wishes from your friends:", "Continue", null, -1, null], // 358
+
+  // ---------- PANEL 18 (you broke Cy AND made it glitch, then walked it back) ----------
+  [350, 625, "Oh so now you click no...", "Yes", null, 360, null], // 359
+  [350, 1125, "Only after I had to break in front of you....", "Sorry", null, 361, null], // 360
+  [350, 600, "And glitch too...", "Sorry", null, 362, null], // 361
+  [350, 900, "Do you know how embarrassing it is??", "Hehe", null, 363, null], // 362
+  [350, 825, "Especially for me?? A tech genius", "Hehe", null, 364, null], // 363
+  [350, 600, "Just kidding XD....", "Hehe", null, 365, null], // 364
+  [350, 900, "I'm not a tech genius but still...", "Still you", null, 366, null], // 365
+  [350, 600, "Well....", "Well?", null, 367, null], // 366
+  [350, 775, "It still is your birthday so...", "Yes", null, 368, null], // 367
+  [350, 600, "Happy birthday!!", "Thanks!", null, 369, null], // 368
+  [350, 1100, "Lemme transfer you to the actual webpage now", "Take me", null, 370, null], // 369
+  [350, 600, "Ahahaha....", "Continue", null, -1, null], // 370
+
+  // ---------- PANEL 19 (you went serious then joked) ----------
+  [350, 725, "Okay phew, you are joking....", "Maybe", null, 372, null], // 371
+  [350, 1200, "I thought we were gonna actually be together...", "Or maybe not", null, 373, null], // 372
+  [350, 1350, "And then we would never be able to be friends again...", "Don't worry", null, 374, null], // 373
+  [350, 750, "But hey, that never happened!", "Phew", null, 375, null], // 374
+  [350, 600, "Bwahahahahahaha....", "Hehe", null, 376, null], // 375
+  [350, 625, "Best friends forever, no?", "Yes", null, 377, null], // 376
+  [350, 650, "Anyways, happy birthday!!!", "Thanks!", null, 378, null], // 377
+  [350, 600, "Your friends' wishes:", "Continue", null, -1, null], // 378
+
+  // ---------- PANEL 20 (you said no right at the climax — broke Cy's heart) ----------
+  [350, 600, "No???!", "Yes no", null, 380, null], // 379
+  [350, 600, "Now??!", "Yes now", null, 381, null], // 380
+  [350, 600, "Are you kidding me?!!", "Maybe", null, 382, null], // 381
+  [350, 900, "Just when you got my hopes up...", "Sorry", null, 383, null], // 382
+  [350, 600, "Hmph...", "Hehe", null, 384, null], // 383
+  [350, 975, "You just love tricking me, don't you...", "Maybe", null, 385, null], // 384
+  [350, 600, "You and everyone...", "Sad", null, 386, null], // 385
+  [350, 600, "Well still...", "Still?", null, 387, null], // 386
+  [350, 750, "I'm still a nice person so...", "You are", null, 388, null], // 387
+  [350, 600, "Happy birthday...", "Thanks", null, 389, null], // 388
+  [350, 1625, "I dunno why I did all this if you were gonna say no at the end...", "Sorry", null, 390, null], // 389
+  [350, 600, "Sighhh.....", "Sigh", null, 391, null], // 390
+  [350, 650, "Well... I still made it...", "You did", null, 392, null], // 391
+  [350, 875, "So here's your birthday gallery...", "Show me", null, 393, null], // 392
+  [350, 1425, "Even tho you basically played the person who built it....", "Continue", null, -1, null], // 393
+
+  // ---------- PANEL 21 (You Reconsidered — said yes at last) ----------
+  [350, 600, "Hehe!!", "Hehe", null, 395, null], // 394
+  [350, 600, "You reconsidered", "I did", null, 396, null], // 395
+  [350, 600, "Yay!!!", "Yay!", null, 397, null], // 396
+  [350, 600, "Okay...", "Okay", null, 398, null], // 397
+  [350, 675, "I guess we're together now?", "Guess so", null, 399, null], // 398
+  [350, 600, "No....", "No?", null, 400, null], // 399
+  [350, 600, "You don't wanna??!", "I do!", null, 401, null], // 400
+  [350, 600, "You're playing with??!", "A little", null, 402, null], // 401
+  [350, 600, "Actually....", "Yes?", null, 403, null], // 402
+  [350, 1725, "I can't read your expression so imma leave it a mystery for me", "Mystery accepted", null, 404, null], // 403
+  [350, 600, "Well anyways....", "Anyway", null, 405, null], // 404
+  [350, 600, "Happy Birthday!!", "Thanks!", null, 406, null], // 405
+  [350, 725, "Hope you enjoy your birthday!", "I will!", null, 407, null], // 406
+  [350, 600, "Your friends too!!", "Hehe", null, 408, null], // 407
+  [350, 775, "One from each friend, I think??", "One each", null, 409, null], // 408
+  [350, 900, "I'm not sure, you can check yourself", "Will do", null, 410, null], // 409
+  [350, 1175, "And ummm... half of them are probably me coz...", "Because?", null, 411, null], // 410
+  [350, 1150, "I am basically half of your friend list, no??!", "Yes", null, 412, null], // 411
+  [350, 600, "Hehe!!!", "Hehe", null, 413, null], // 412
+  [350, 600, "Enjoy!!", "Continue", null, -1, null], // 413
+
+  // ---------- PANEL 22 (Stayed "No" forever — Cy gives up gracefully) ----------
+  [350, 600, "Aww....", "Aw", null, 415, null], // 414
+  [350, 725, "So you really don't wanna...", "I really don't", null, 416, null], // 415
+  [350, 1425, "I tried to convince you to play along for you to agree??!", "Sorry", null, 417, null], // 416
+  [350, 600, "Sighhhh....", "Sigh", null, 418, null], // 417
+  [350, 600, "Well....", "Well?", null, 419, null], // 418
+  [350, 750, "You are the special girl today", "I am", null, 420, null], // 419
+  [350, 975, "I can't really force you to say yes...", "Can't", null, 421, null], // 420
+  [350, 650, "Well, happy birthday....!!", "Thanks", null, 422, null], // 421
+  [350, 1275, "And here are more birthday wishes from your friends", "Continue", null, -1, null], // 422
+
+  // ---------- PANEL 23 (Janice needed "evidence" to say yes — playful teasing) ----------
+  [350, 600, "So....", "So?", null, 424, null], // 423
+  [350, 600, "So you needed evidence?!", "Maybe", null, 425, null], // 424
+  [350, 600, "To say yes??", "Maybe", null, 426, null], // 425
+  [350, 750, "That's not the Janice I know??", "It is", null, 427, null], // 426
+  [350, 900, "You could never be moved by evidence", "Hehe", null, 428, null], // 427
+  [350, 600, "But you know what??!", "What?", null, 429, null], // 428
+  [350, 600, "I'll take it, hehe!!!", "Hehe", null, 430, null], // 429
+  [350, 600, "WAIT A SECOND...", "What", null, 431, null], // 430
+  [350, 825, "You're not pitying me, are you??!", "I'm not", null, 432, null], // 431
+  [350, 650, "Cuz it seems like you are.", "Nope", null, 433, null], // 432
+  [350, 600, "Hmph...", "Hehe", null, 434, null], // 433
+  [350, 600, "I'm not agreeing tho...", "Mm", null, 435, null], // 434
+  [350, 625, "You can dream about it...", "Hehe", null, 436, null], // 435
+  [350, 2575, "But since I'm a very nice person, and I pity that nobody else is gifting you such a wonderful surprise,", "Aww", null, 437, null], // 436
+  [350, 1050, "I'm still gonna wish you a happy birthday.", "Thanks", null, 438, null], // 437
+  [350, 600, "So...", "So?", null, 439, null], // 438
+  [350, 1750, "Yeah. And I'm not gonna hide your birthday wishes from your friends...", "Show them", null, 440, null], // 439
+  [350, 1375, "Since poor poor Janice hasn't got any good surprises...", "Aww", null, 441, null], // 440
+  [350, 600, "Hmphhh....", "Continue", null, -1, null], // 441
+
+  // ---------- PANEL 24 (Cy proposes — Janice will be impossible to convince) ----------
+  [350, 600, "Wait....", "Wait", null, 443, null], // 442
+  [350, 1025, "Did it take that much to convince you....", "Mm", null, 444, null], // 443
+  [350, 925, "You know, I chose to marry, right....", "You did?", null, 445, null], // 444
+  [350, 600, "Ughhh....", "Hehe", null, 446, null], // 445
+  [350, 1375, "It's gonna be soooooo annoying when I propose, uh huh??", "Probably", null, 447, null], // 446
+  [350, 600, "Imagine me...", "Imagining", null, 448, null], // 447
+  [350, 1075, "Asking you... and then you dunno what to do", "Hehe", null, 449, null], // 448
+  [350, 1800, "And then I have to say a whole speech to try and convince you to say yes", "Hehe", null, 450, null], // 449
+  [350, 1100, "And the photographer just there waiting...", "Aw", null, 451, null], // 450
+  [350, 600, "Yeah.....", "Yeah", null, 452, null], // 451
+  [350, 600, "No thanks....", "Hmm", null, 453, null], // 452
+  [350, 650, "Let's just stay friends...", "Friends", null, 454, null], // 453
+  [350, 600, "And since we're friends,", "Friends", null, 455, null], // 454
+  [350, 600, "Happy Birthday!!!", "Thanks!", null, 456, null], // 455
+  [350, 1775, "And some more of my kind also have some things to tell you, ahahahaha", "Hehe", null, 457, null], // 456
+  [350, 650, "My kind is friends, btw XD", "Continue", null, -1, null], // 457
+
+  // ---------- PANEL 25 (NO branch — boba plea + epilogue) ----------
+  [350, 600, "Boba....", "Boba", null, 459, null], // 458
+  [350, 600, "Boba, boba, boba...", "Hehe", null, 460, null], // 459
+  [350, 1100, "The magic solution to all Janice problems...", "You know it", null, 461, null], // 460
+  [350, 600, "I should've known...", "Hehe", null, 462, null], // 461
+  [350, 600, "Well...", "Well?", null, 463, null], // 462
+  [350, 600, "Come over then...", "When?", null, 464, null], // 463
+  [350, 600, "Come visit me...", "Okay", null, 465, null], // 464
+  [350, 975, "We can make them and drink together...", "Yes please", null, 466, null], // 465
+  [350, 750, "And make out (sike) too *wink*", "Hehe", null, 467, null], // 466
+  [350, 600, "Just kidding hahaha", "Hehe", null, 468, null], // 467
+  [350, 600, "Happy Birthday...", "Thanks", null, 469, null], // 468
+  [350, 900, "This is the final ending I'm writing", "Final one", null, 470, null], // 469
+  [350, 600, "Yayyyy!!", "Yay", null, 471, null], // 470
+  [350, 600, "Ugh...", "Hehe", null, 472, null], // 471
+  [350, 600, "It took so long...", "Worth it", null, 473, null], // 472
+  [350, 725, "Well... I hope you had fun...", "I did", null, 474, null], // 473
+  [350, 800, "There's 24 different endings....", "24?!", null, 475, null], // 474
+  [350, 900, "Hope you find them all (if you want)", "I'll try", null, 476, null], // 475
+  [350, 600, "Ohh...", "What?", null, 477, null], // 476
+  [350, 1175, "I just realized I missed a club application...", "Oops", null, 478, null], // 477
+  [350, 1550, "Well it's fine, I'll just send a quick text to the captains...", "Good luck", null, 479, null], // 478
+  [350, 750, "I'm kinda close with them, lol", "Nice", null, 480, null], // 479
+  [350, 600, "Anyways...", "Anyway", null, 481, null], // 480
+  [350, 700, "Imma stay with you a long time, now", "Stay", null, 482, null], // 481
+  [350, 700, "Enjoy more birthday wishes~~", "Finish", null, -1, null] // 482
+
 ];
+
 
 function showOverlay() {
     const overlay = document.getElementById('myOverlay');
@@ -463,15 +902,49 @@ function showOverlay() {
 
 async function birthdaySuprise() {
     console.log("birthdaySuprise started");
+
+    const yesbtn = document.getElementById("yesbtn");
+    const nobtn = document.getElementById("nobtn");
+
+
     showOverlay();
-    const entry = dialogueScript[dialogueIndex] || dialogueScript[0];
-    await updateText(entry[0], entry[1], entry[2]);
-    await new Promise (resolve => {
-        yesbtn.addEventListener('click', () => {
-        updateButtons(entry[3], entry[4])
-        dialogueIndex++;
-        resolve;
-    })})}
+    let entry = dialogueScript[0];
+    do {
+        updateText(entry[0], entry[1], entry[2]);
+        
+        await new Promise(resolve => {
+
+            const cleanup = () => {
+                yesbtn.removeEventListener("click", handleYes);
+                nobtn.removeEventListener("click", handleNo);
+            };
+
+            // Create the handler functions so we can clean up the *other* button's listener
+            const handleYes = () => {
+                cleanup();
+                dialogueIndex = entry[5];
+                entry = dialogueScript[dialogueIndex];
+                updateButtons(entry[3], entry[4]);
+                resolve(); // Fixed: Added parentheses
+            };
+
+            const handleNo = () => {
+                cleanup();
+                dialogueIndex = entry[6];
+                entry = dialogueScript[dialogueIndex];
+                updateButtons(entry[3], entry[4]);
+                resolve(); // Fixed: Added parentheses
+            };
+
+            // { once: true } ensures the clicked button triggers its listener exactly once
+            yesbtn.addEventListener('click', handleYes, { once: true });
+            nobtn.addEventListener('click', handleNo, { once: true });
+        }); // Fixed: Added missing closing parenthesis for the Promise
+
+    } while (entry[5] > 0);
+    document.getElementById('myOverlay').classList.remove('visible');
+    document.getElementById('myOverlay').classList.add('hidden');
+}
 
 
 async function updateText(delay, reveal, text) {
@@ -510,5 +983,13 @@ function updateButtons(ybtn, nbtn) {
         return y;
     })()}px`;
     nobtn.style.position = 'relative';
+
+if (!nbtn) {
+    const button = document.getElementById('nobtn');
+    if (button) {
+        button.style.display = 'none';
+    }
+}
+
     console.log("updateButtons Finished");
 }

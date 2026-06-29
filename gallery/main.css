@@ -155,55 +155,45 @@ body, html {
 
 }
 
-/* Base styles for all buttons */
-.btn {
-    padding: 5px 20px;          /* Adds 12px top/bottom, 30px left/right spacing inside button */
-    font-size: 2rem;           /* Sets button text size */
-    border: 2px solid var(--suprise-button-primary);     /* Creates white border around button */
-    background: var(--suprise-background);     /* Makes button background see-through */
-    color: var(--suprise-button-primary);                /* Sets button text color to white */
-    cursor: pointer;             /* Changes mouse cursor to hand when hovering */
-    border-radius: 5px;          /* Rounds the corners of button */
-    transition: all 0.3s ease;   /* Smoothly animates all changes over 0.3 seconds */
-    font-family: var(--font-surprise); /* Uses the surprise-style serif */
+/* ── Overlay buttons (yes/no) ──────────────────── */
+/* Yes button: solid primary bg normally, transparent on hover */
+#yesbtn {
+    padding: 5px 20px;
+    font-size: 2rem;
+    border: 2px solid var(--suprise-button-primary);
+    background: var(--suprise-button-primary);
+    color: var(--suprise-background);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-family: var(--font-surprise);
+    position: relative;
+    z-index: 1010;
+}
+#yesbtn:hover {
+    background: transparent;
+    color: var(--suprise-button-primary);
+    transform: none;
 }
 
-/* Styles for button hover state */
-.btn:hover {
-    background: var(--suprise-button-primary);  /* Changes background to white when mouse hovers */
-    color: var(--suprise-background);       /* Changes text color to black when mouse hovers */
+/* No button: transparent normally, solid secondary bg on hover */
+#nobtn {
+    padding: 5px 20px;
+    font-size: 2rem;
+    border: 2px solid var(--suprise-button-primary);
+    background: transparent;
+    color: var(--suprise-button-primary);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-family: var(--font-surprise);
+    position: relative;
+    z-index: 1010;
 }
-
-
-.nobtn {
-    padding: 5px 20px;          /* Adds 12px top/bottom, 30px left/right spacing inside button */
-    font-size: 2rem;           /* Sets button text size */
-    border: 2px solid var(--suprise-button-primary);     /* Creates white border around button */
-    background: transparent;     /* Makes button background see-through */
-    color: var(--suprise-button-primary);                /* Sets button text color to white */
-    cursor: pointer;             /* Changes mouse cursor to hand when hovering */
-    border-radius: 5px;          /* Rounds the corners of button */
-    transition: all 0.3s ease;   /* Smoothly animates all changes over 0.3 seconds */
-    font-family: var(--font-surprise); /* Uses a more playful surprise-style serif */
-    transform: translateY(8px);
-}
-
-/* Styles for button hover state */
-.nobtn:hover {
-    background: var(--suprise-button-primary);  /* Changes background to white when mouse hovers */
-    color: transparent;       /* Changes text color to black when mouse hovers */
-}
-
-/* Additional styles for primary button */
-.nobtn-primary {
-    background: transparent;  /* Keeps the button transparent */
-    color: var(--suprise-button-primary); /* Keeps the label visible */
-}
-
-/* Hover state for primary button */
-.nobtn-primary:hover {
-    background: transparent;  /* Makes background transparent when hovering */
-    color: var(--suprise-button-primary);             /* Changes text to white when hovering */
+#nobtn:hover {
+    background: var(--suprise-button-primary);
+    color: var(--suprise-background);
+    transform: none;
 }
 
 .cursor {
